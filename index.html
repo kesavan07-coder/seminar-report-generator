@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEC Seminar Report Generator | Muthayammal Engineering College</title>
+  <meta name="description" content="Generate official, publication-ready seminar reports for Muthayammal Engineering College in .doc Word format matching the official 3-page template.">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,700;1,400;1,700&family=Carlito:ital,wght@0,400;0,700;1,400;1,700&family=Gelasio:ital,wght@0,400;0,700;1,400;1,700&family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+  <!-- Embedded Tinos (Times New Roman metric-compatible) base64 WOFF2 — guarantees font on all devices -->
+  <link rel="stylesheet" href="css/fonts.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Top Institutional Header -->
+  <header class="site-header">
+    <div class="container">
+      <div class="header-content">
+        <img src="assets/mec-logo.svg" alt="Muthayammal Engineering College" class="college-logo" id="college-logo-btn" title="Muthayammal Engineering College (Admin Portal)" style="cursor: pointer;">
+        <div class="header-text">
+          <h1>MUTHAYAMMAL ENGINEERING COLLEGE</h1>
+          <div class="subtitle">(An Autonomous Institution) &bull; Rasipuram &ndash; 637 408</div>
+          <div class="tagline">Official COE/IQAC Format 3-Page Seminar Report Generator &amp; Word Editor</div>
+          <div class="header-badge-row">
+            <span class="badge badge-gold">Format: MEC/IQAC/2026-27/COE/136</span>
+            <span class="badge badge-blue">Official 3-Page Template &bull; Live Word Editor &bull; .doc Export</span>
+            <button type="button" id="btn-open-transactions" class="badge badge-txn" title="View Payment Transactions">
+              <svg width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm-1 5v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8H1z"/></svg>
+              💳 Transactions
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Application Body -->
+  <main>
+    <div class="container">
+
+      <!-- Quick Action / Sample Bar -->
+      <div class="quick-fill-bar">
+        <div class="quick-fill-text">
+          <strong>Fast Testing:</strong> Click below to pre-populate realistic sample data for instant verification.
+          <span id="sample-loaded-badge" class="sample-badge hidden">&check; Sample data populated!</span>
+        </div>
+        <button type="button" id="btn-fill-sample" class="btn-secondary">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0Zm-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+            <path d="M2 13c0 1 1 1 1 1h5.256A4.493 4.493 0 0 1 8 12.5a4.49 4.49 0 0 1 1.544-3.393C8.423 9.043 7.277 9 6 9c-3 0-5 2-5 4Z"/>
+          </svg>
+          Fill Sample Data
+        </button>
+      </div>
+
+      <!-- Mode Selection Tabs -->
+      <div class="mode-switch-container">
+        <div class="mode-switch-tabs" role="tablist">
+          <button type="button" id="tab-mode-report-ppt" class="mode-tab-btn active" role="tab" aria-selected="true">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"/>
+            </svg>
+            Mode A: Report + PPT
+          </button>
+          <button type="button" id="tab-mode-ppt-only" class="mode-tab-btn" role="tab" aria-selected="false">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"/>
+              <path d="M6 4h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/>
+            </svg>
+            Mode B: Create PPT Only
+            <span class="mode-badge-free">Free</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Error Notification Banner -->
+      <div id="error-container" class="error-card hidden" role="alert">
+        <div class="error-content">
+          <div class="error-icon">
+            <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="error-title">Generation Issue Encountered</div>
+            <div id="error-message">Error details will appear here.</div>
+          </div>
+        </div>
+        <button type="button" id="error-dismiss" class="error-close-btn" aria-label="Close error">&times;</button>
+      </div>
+
+      <!-- Multi-step Progress Tracker -->
+      <div id="progress-container" class="progress-card hidden">
+        <div class="steps-container">
+          <div class="steps-track"></div>
+          
+          <div id="step-indicator-1" class="step-node step-pending">
+            <div class="step-circle">1</div>
+            <div class="step-label">Draft Content</div>
+          </div>
+          
+          <div id="step-indicator-2" class="step-node step-pending">
+            <div class="step-circle">2</div>
+            <div class="step-label">Build Diagram</div>
+          </div>
+          
+          <div id="step-indicator-3" class="step-node step-pending">
+            <div class="step-circle">3</div>
+            <div class="step-label">Assemble Doc &amp; PPT</div>
+          </div>
+        </div>
+        
+        <div class="progress-status-box">
+          <div class="loader-spinner"></div>
+          <div id="progress-status-text">Initializing generation engine...</div>
+        </div>
+      </div>
+
+      <!-- Success Notification Banner -->
+      <div id="success-container" class="success-banner hidden">
+        <div class="success-info">
+          <h3>&check; Official 3-Page Seminar Report &amp; Presentation Generated!</h3>
+          <p>You can directly click and <strong>edit any text on the pages below like MS Word</strong>, replace diagrams, and download both the formatted report and the PowerPoint presentation.</p>
+          <div class="word-hint">
+            <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+              <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+            </svg>
+            <span><strong>Note:</strong> Download the .doc report, report PDF, and the matching 16:9 PowerPoint deck below.</span>
+          </div>
+        </div>
+        <div class="success-download-row">
+          <button type="button" id="btn-download" class="btn-download-hero">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+              <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+            </svg>
+            Download Report (.doc)
+          </button>
+          <button type="button" id="btn-download-pdf" class="btn-download-pdf">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+            </svg>
+            Download Report PDF
+          </button>
+          <button type="button" id="btn-print-pdf" class="btn-print-pdf" title="Print or Save as crisp vector PDF using browser's native print">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+              <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+            </svg>
+            Print Report PDF
+          </button>
+          <button type="button" id="btn-download-ppt-pptx" class="btn-download-pptx" title="Download matching 16:9 PowerPoint Presentation">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"/>
+              <path d="M6 4h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/>
+            </svg>
+            Download PPT (.pptx)
+          </button>
+          <button type="button" id="btn-download-ppt-pdf" class="btn-download-ppt-pdf" title="Download matching Presentation as PDF">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+            </svg>
+            Download PPT as PDF
+          </button>
+          <button type="button" id="btn-toggle-slide-preview" class="btn-outline" title="Toggle interactive slide preview">
+            Preview Slide Deck
+          </button>
+        </div>
+        <div id="mode-a-slide-preview-container" class="hidden" style="margin-top: 18px;"></div>
+      </div>
+
+      <!-- Main Input Form -->
+      <form id="report-form" class="card">
+        
+        <!-- Seminar Topic Section -->
+        <div class="section-header">
+          <h2 class="section-title">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+              <path d="M4 4h8v2H4V4zm0 4h8v1H4V8zm0 3h5v1H4v-1z"/>
+            </svg>
+            1. Seminar Topic &amp; Subject Details
+          </h2>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group form-group-full">
+            <label for="topic">Topic of the Seminar <span class="req-star">*</span></label>
+            <input type="text" id="topic" name="topic" required placeholder="e.g. Federated Learning for Privacy-Preserving Healthcare Analytics">
+            <div class="help-text">The AI model will generate a 3-page report matching the college COE/IQAC standard.</div>
+          </div>
+
+          <div class="form-group">
+            <label for="subject">Subject / Course Name <span class="req-star">*</span></label>
+            <input type="text" id="subject" name="subject" required placeholder="e.g. Distributed Machine Learning &amp; Edge Computing">
+          </div>
+
+          <div class="form-group">
+            <label for="diagramOption">Diagram Source</label>
+            <select id="diagramOption" name="diagramOption">
+              <option value="ai" selected>Auto-Generate AI Architecture Diagram (Vector)</option>
+              <option value="custom">Upload Custom Diagram / Image File</option>
+              <option value="url">Use Custom Image / Google Image URL</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="fontStyle">Font Style</label>
+            <select id="fontStyle" name="fontStyle">
+              <option value="Times New Roman" selected>Times New Roman</option>
+              <option value="Arial">Arial</option>
+              <option value="Calibri">Calibri</option>
+              <option value="Georgia">Georgia</option>
+            </select>
+          </div>
+
+          <!-- Optional Custom Image Input -->
+          <div id="custom-image-group" class="form-group form-group-full hidden">
+            <label for="customImageFile">Upload Diagram Image File</label>
+            <input type="file" id="customImageFile" accept="image/*">
+            <div class="help-text">Upload a PNG, JPEG or WebP diagram to be embedded in Section 3 (Figure 1).</div>
+          </div>
+
+          <!-- Optional Image URL Input -->
+          <div id="url-image-group" class="form-group form-group-full hidden">
+            <label for="customImageUrl">Google / Web Image URL</label>
+            <input type="text" id="customImageUrl" placeholder="https://example.com/diagram.png">
+            <div class="help-text">Enter direct URL to an image or diagram.</div>
+          </div>
+
+          <!-- Coordinated PowerPoint Presentation Template Selector -->
+          <div class="form-group form-group-full" style="margin-top: 10px;">
+            <div class="template-selector-heading">
+              <label class="form-label-with-badge">
+                <span style="font-weight: 700; font-size: 0.95rem; color: #1e293b;">
+                  PowerPoint Presentation Template <span class="req-star">*</span>
+                </span>
+                <span class="badge badge-blue">Mandatory Selection</span>
+              </label>
+              <p class="template-selector-subtext">Select the design template for the accompanying presentation deck. Both templates generate full-height 16:9 slides with zero excessive whitespace.</p>
+            </div>
+
+            <div class="ppt-template-grid" id="mode-a-template-grid">
+              <!-- Template 1 Card -->
+              <div class="ppt-template-card selected" data-template-id="template-academic-flowchart" tabindex="0" role="radio" aria-checked="true">
+                <div class="ppt-template-badge-row">
+                  <span class="badge badge-blue">Template 1 • Academic Standard</span>
+                  <span class="ppt-template-check-icon">&check; Selected</span>
+                </div>
+                <div class="ppt-template-img-frame">
+                  <img src="assets/templates/template-1-preview.png" alt="Classic Academic Seminar Template Preview" loading="lazy">
+                </div>
+                <div class="ppt-template-info">
+                  <h4 class="ppt-template-name">Classic Academic Seminar</h4>
+                  <div class="ppt-template-tags">
+                    <span class="ppt-tag">Times New Roman</span>
+                    <span class="ppt-tag">Square Bullets (❑)</span>
+                    <span class="ppt-tag">Connected Flowchart</span>
+                    <span class="ppt-tag">Zero Whitespace</span>
+                  </div>
+                  <p class="ppt-template-desc">Standard academic presentation format with Times New Roman typography, Wingdings square bullets, and a topic-specific connected flowchart in MEC steel blue.</p>
+                </div>
+              </div>
+
+              <!-- Template 2 Card -->
+              <div class="ppt-template-card" data-template-id="template-executive-grid" tabindex="0" role="radio" aria-checked="false">
+                <div class="ppt-template-badge-row">
+                  <span class="badge badge-purple" style="background: #7c3aed; color: #ffffff;">Template 2 • Executive Grid</span>
+                  <span class="ppt-template-check-icon">&check; Selected</span>
+                </div>
+                <div class="ppt-template-img-frame">
+                  <img src="assets/templates/template-2-preview.png" alt="Executive Technical Seminar Template Preview" loading="lazy">
+                </div>
+                <div class="ppt-template-info">
+                  <h4 class="ppt-template-name">Executive Technical Seminar</h4>
+                  <div class="ppt-template-tags">
+                    <span class="ppt-tag">Concept Callout Banner</span>
+                    <span class="ppt-tag">3-Col Parameter Table</span>
+                    <span class="ppt-tag">Decision Flow</span>
+                    <span class="ppt-tag">3-Pillar Best Practices</span>
+                  </div>
+                  <p class="ppt-template-desc">Executive technical format with high-impact headline banners, a 3-column architectural parameter table, and 3-pillar Best Practices / Key Takeaways cards.</p>
+                </div>
+              </div>
+            </div>
+            <input type="hidden" id="modeAPptTemplateId" name="modeAPptTemplateId" value="template-academic-flowchart">
+          </div>
+        </div>
+
+        <!-- Student & Course Details Section -->
+        <div class="section-header" style="margin-top: 32px;">
+          <h2 class="section-title">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3Zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+            </svg>
+            2. Student &amp; Evaluation Information
+          </h2>
+        </div>
+
+        <div class="form-grid">
+          <!-- Student Name -->
+          <div class="form-group">
+            <label for="studentName">Name of the Student <span class="req-star">*</span></label>
+            <input type="text" id="studentName" name="studentName" required placeholder="e.g. KAVIN KUMAR S">
+          </div>
+
+          <!-- Register No -->
+          <div class="form-group">
+            <label for="registerNo">Register No. <span class="req-star">*</span></label>
+            <input type="text" id="registerNo" name="registerNo" required placeholder="e.g. 731622104045">
+          </div>
+
+          <!-- 1. Course Code & Course Name (Searchable Combobox + Editable Name + Manual Other) -->
+          <div class="form-group form-group-full">
+            <label for="courseComboboxContainer">Course Code &amp; Course Name <span class="req-star">*</span></label>
+            <div id="courseComboboxContainer"></div>
+            <!-- Populated Course Name (Editable) -->
+            <div class="manual-field-single" style="margin-top: 8px;">
+              <label for="courseNameInput" style="font-size: 0.82rem; color: #475569;">Course Name (Editable)</label>
+              <input type="text" id="courseNameInput" placeholder="e.g. Data Warehousing and Data Mining">
+            </div>
+            <!-- Manual Entry when 'Other' selected -->
+            <div id="courseManualGroup" class="manual-entry-group hidden">
+              <div class="manual-entry-row">
+                <div class="form-group">
+                  <label for="manualCourseCode">Custom Course Code <span class="req-star">*</span></label>
+                  <input type="text" id="manualCourseCode" placeholder="e.g. 23CBC99">
+                </div>
+                <div class="form-group">
+                  <label for="manualCourseName">Custom Course Name <span class="req-star">*</span></label>
+                  <input type="text" id="manualCourseName" placeholder="e.g. Advanced Distributed Systems">
+                </div>
+              </div>
+            </div>
+            <input type="hidden" id="courseCodeName" name="courseCodeName" value="23CBC26 / Data Warehousing and Data Mining">
+            <div class="help-text">Search by course code (e.g. 23CBC26, 23CSF18) or course name. Select "Other" for custom entry.</div>
+          </div>
+
+          <!-- 2. Course Faculty Name & Designation (Searchable Combobox + Editable Designation + Manual Other) -->
+          <div class="form-group form-group-full">
+            <label for="facultyComboboxContainer">Course Faculty Name &amp; Designation <span class="req-star">*</span></label>
+            <div id="facultyComboboxContainer"></div>
+            <!-- Populated Designation (Editable) -->
+            <div class="manual-field-single" style="margin-top: 8px;">
+              <label for="facultyDesigInput" style="font-size: 0.82rem; color: #475569;">Faculty Designation (Editable)</label>
+              <input type="text" id="facultyDesigInput" placeholder="e.g. AP/CSBS">
+            </div>
+            <!-- Manual Entry when 'Other' selected -->
+            <div id="facultyManualGroup" class="manual-entry-group hidden">
+              <div class="manual-entry-row">
+                <div class="form-group">
+                  <label for="manualFacultyName">Custom Faculty Name <span class="req-star">*</span></label>
+                  <input type="text" id="manualFacultyName" placeholder="e.g. Dr. M. Senthil Kumar">
+                </div>
+                <div class="form-group">
+                  <label for="manualFacultyDesig">Designation <span class="req-star">*</span></label>
+                  <input type="text" id="manualFacultyDesig" placeholder="e.g. Prof/CSE">
+                </div>
+              </div>
+            </div>
+            <input type="hidden" id="facultyName" name="facultyName" value="Mr. D. Jotheeswaran, AP/CSBS">
+            <div class="help-text">Search faculty name or designation. Select "Other" to enter custom details manually.</div>
+          </div>
+
+          <!-- 4. Program / Department (Dropdown + Manual Other) -->
+          <div class="form-group">
+            <label for="departmentSelect">Program / Department <span class="req-star">*</span></label>
+            <select id="departmentSelect">
+              <option value="B.Tech Computer Science and Business Systems" selected>B.Tech Computer Science and Business Systems</option>
+              <option value="B.E. Computer Science and Engineering">B.E. Computer Science and Engineering</option>
+              <option value="other">Other (Enter Custom Program / Department)</option>
+            </select>
+            <div id="manualDepartmentGroup" class="manual-field-single hidden">
+              <input type="text" id="manualDepartment" placeholder="e.g. M.E. Computer Science and Engineering">
+            </div>
+            <input type="hidden" id="department" name="department" value="B.Tech Computer Science and Business Systems">
+          </div>
+
+          <!-- 3. Seminar Number (Dropdown 01-05 + Other, Preserves leading zero) -->
+          <div class="form-group">
+            <label for="seminarNoSelect">Seminar No. <span class="req-star">*</span></label>
+            <select id="seminarNoSelect">
+              <option value="01" selected>01</option>
+              <option value="02">02</option>
+              <option value="03">03</option>
+              <option value="04">04</option>
+              <option value="05">05</option>
+              <option value="other">Other (Custom Seminar Number)</option>
+            </select>
+            <div id="manualSeminarNoGroup" class="manual-field-single hidden">
+              <input type="text" id="manualSeminarNo" placeholder="e.g. 06 (preserves leading zeros)">
+            </div>
+            <input type="hidden" id="seminarNo" name="seminarNo" value="01">
+          </div>
+
+          <!-- 5. Year / Semester / Section (3 Separate Dropdowns + Other) -->
+          <div class="form-group form-group-full">
+            <label>Year / Semester / Section <span class="req-star">*</span></label>
+            <div class="subgrid-3col">
+              <div class="form-group">
+                <label for="yearSelect" style="font-size: 0.8rem; color: #64748b;">Year</label>
+                <select id="yearSelect">
+                  <option value="I">I</option>
+                  <option value="II">II</option>
+                  <option value="III" selected>III</option>
+                  <option value="other">Other</option>
+                </select>
+                <div id="manualYearGroup" class="manual-field-single hidden">
+                  <input type="text" id="manualYear" placeholder="e.g. IV">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="semesterSelect" style="font-size: 0.8rem; color: #64748b;">Semester</label>
+                <select id="semesterSelect">
+                  <option value="I">I</option>
+                  <option value="II">II</option>
+                  <option value="III">III</option>
+                  <option value="IV">IV</option>
+                  <option value="V">V</option>
+                  <option value="VI" selected>VI</option>
+                  <option value="other">Other</option>
+                </select>
+                <div id="manualSemesterGroup" class="manual-field-single hidden">
+                  <input type="text" id="manualSemester" placeholder="e.g. VII">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="sectionSelect" style="font-size: 0.8rem; color: #64748b;">Section</label>
+                <select id="sectionSelect">
+                  <option value="A" selected>A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
+                  <option value="D">D</option>
+                  <option value="E">E</option>
+                  <option value="other">Other</option>
+                </select>
+                <div id="manualSectionGroup" class="manual-field-single hidden">
+                  <input type="text" id="manualSection" placeholder="e.g. F">
+                </div>
+              </div>
+            </div>
+            <input type="hidden" id="yearSemSec" name="yearSemSec" value="III / VI / A">
+            <div class="help-text">Select Year, Semester, and Section independently or enter custom values.</div>
+          </div>
+
+          <!-- 7. Academic Year (Dropdown + Other) -->
+          <div class="form-group">
+            <label for="academicYearSelect">Academic Year <span class="req-star">*</span></label>
+            <select id="academicYearSelect">
+              <option value="2026 - 2027" selected>2026 - 2027</option>
+              <option value="other">Other (Enter Custom Academic Year)</option>
+            </select>
+            <div id="manualAcademicYearGroup" class="manual-field-single hidden">
+              <input type="text" id="manualAcademicYear" placeholder="e.g. 2025 - 2026">
+            </div>
+            <input type="hidden" id="academicYear" name="academicYear" value="2026 - 2027">
+          </div>
+
+          <!-- 6. Seminar Date Selection (Calendar Picker + Manual Entry Mode) -->
+          <div class="form-group">
+            <label for="dateModeSelect">Seminar Date</label>
+            <select id="dateModeSelect">
+              <option value="calendar" selected>Select from Calendar</option>
+              <option value="other">Manual Date Entry (Other)</option>
+            </select>
+            <div id="calendarDateGroup" class="manual-field-single">
+              <input type="date" id="calendarDateInput" value="2026-08-23">
+              <span id="seminarDateFormattedDisplay" class="date-format-hint">Formatted: 23-08-2026</span>
+            </div>
+            <div id="manualDateGroup" class="manual-field-single hidden">
+              <input type="text" id="manualSeminarDate" placeholder="e.g. 23-08-2026">
+            </div>
+            <input type="hidden" id="seminarDate" name="seminarDate" value="23-08-2026">
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="form-actions">
+          <button type="button" id="btn-reset" class="btn-outline">Clear Form</button>
+          <button type="submit" id="btn-generate" class="btn-primary">
+            <span id="btn-spinner" class="loader-spinner" style="display: none; width: 18px; height: 18px; border-width: 2px; border-top-color: #ffffff; border-color: rgba(255,255,255,0.2);"></span>
+            <span id="btn-text">Generate Seminar Report</span>
+          </button>
+        </div>
+
+      </form>
+
+      <!-- ==========================================================================
+           MODE B: CREATE PPT ONLY (Free, Topic-Only, Editable PPTX & Vector PDF)
+           ========================================================================== -->
+      <section id="ppt-only-section" class="ppt-only-card hidden" aria-labelledby="ppt-only-title">
+        <div class="ppt-only-header">
+          <h2 id="ppt-only-title" class="ppt-only-title">
+            <svg width="24" height="24" fill="#ea580c" viewBox="0 0 16 16">
+              <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"/>
+              <path d="M6 4h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/>
+            </svg>
+            Create PowerPoint Presentation (.pptx &amp; .pdf)
+          </h2>
+          <p class="ppt-only-desc">
+            Generate an academic 16:9 presentation directly from your seminar topic with Times New Roman typography, 
+            topic-specific structured flowchart, and classroom-ready slides. No seminar report or payment required.
+          </p>
+        </div>
+
+        <form id="ppt-only-form">
+          <div class="form-grid">
+            <div class="form-group form-group-full">
+              <label for="pptTopicInput">Seminar Topic <span class="req-star">*</span></label>
+              <input type="text" id="pptTopicInput" name="pptTopicInput" required placeholder="e.g. Blockchain Technology or Artificial Intelligence in Healthcare">
+              <div class="help-text">Enter only your seminar topic. The AI engine will derive a complete presentation outline and connected flowchart.</div>
+            </div>
+
+            <div class="form-group">
+              <label for="pptSubjectInput">Discipline / Course Domain (Optional)</label>
+              <input type="text" id="pptSubjectInput" name="pptSubjectInput" placeholder="e.g. Distributed Systems &amp; Cryptography">
+            </div>
+
+            <div class="form-group">
+              <label for="pptSlideCount">Slide Deck Detail</label>
+              <select id="pptSlideCount" name="pptSlideCount">
+                <option value="auto" selected>Auto (Recommended - 4 to 6 Slides)</option>
+                <option value="4">Standard (4 Slides - Matches Master Template)</option>
+                <option value="6">Detailed (6 Slides - With Use Cases &amp; Challenges)</option>
+              </select>
+            </div>
+
+            <!-- PowerPoint Presentation Template Selector -->
+            <div class="form-group form-group-full" style="margin-top: 10px;">
+              <div class="template-selector-heading">
+                <label class="form-label-with-badge">
+                  <span style="font-weight: 700; font-size: 0.95rem; color: #1e293b;">
+                    PowerPoint Presentation Template <span class="req-star">*</span>
+                  </span>
+                  <span class="badge badge-orange" style="background: #ea580c; color: #ffffff;">Mandatory Selection</span>
+                </label>
+                <p class="template-selector-subtext">Select the design template for your presentation deck. Both templates generate full-height 16:9 slides with zero excessive whitespace.</p>
+              </div>
+
+              <div class="ppt-template-grid" id="mode-b-template-grid">
+                <!-- Template 1 Card -->
+                <div class="ppt-template-card selected" data-template-id="template-academic-flowchart" tabindex="0" role="radio" aria-checked="true">
+                  <div class="ppt-template-badge-row">
+                    <span class="badge badge-blue">Template 1 • Academic Standard</span>
+                    <span class="ppt-template-check-icon">&check; Selected</span>
+                  </div>
+                  <div class="ppt-template-img-frame">
+                    <img src="assets/templates/template-1-preview.png" alt="Classic Academic Seminar Template Preview" loading="lazy">
+                  </div>
+                  <div class="ppt-template-info">
+                    <h4 class="ppt-template-name">Classic Academic Seminar</h4>
+                    <div class="ppt-template-tags">
+                      <span class="ppt-tag">Times New Roman</span>
+                      <span class="ppt-tag">Square Bullets (❑)</span>
+                      <span class="ppt-tag">Connected Flowchart</span>
+                      <span class="ppt-tag">Zero Whitespace</span>
+                    </div>
+                    <p class="ppt-template-desc">Standard academic presentation format with Times New Roman typography, Wingdings square bullets, and a topic-specific connected flowchart in MEC steel blue.</p>
+                  </div>
+                </div>
+
+                <!-- Template 2 Card -->
+                <div class="ppt-template-card" data-template-id="template-executive-grid" tabindex="0" role="radio" aria-checked="false">
+                  <div class="ppt-template-badge-row">
+                    <span class="badge badge-purple" style="background: #7c3aed; color: #ffffff;">Template 2 • Executive Grid</span>
+                    <span class="ppt-template-check-icon">&check; Selected</span>
+                  </div>
+                  <div class="ppt-template-img-frame">
+                    <img src="assets/templates/template-2-preview.png" alt="Executive Technical Seminar Template Preview" loading="lazy">
+                  </div>
+                  <div class="ppt-template-info">
+                    <h4 class="ppt-template-name">Executive Technical Seminar</h4>
+                    <div class="ppt-template-tags">
+                      <span class="ppt-tag">Concept Callout Banner</span>
+                      <span class="ppt-tag">3-Col Parameter Table</span>
+                      <span class="ppt-tag">Decision Flow</span>
+                      <span class="ppt-tag">3-Pillar Best Practices</span>
+                    </div>
+                    <p class="ppt-template-desc">Executive technical format with high-impact headline banners, a 3-column architectural parameter table, and 3-pillar Best Practices / Key Takeaways cards.</p>
+                  </div>
+                </div>
+              </div>
+              <input type="hidden" id="modeBPptTemplateId" name="modeBPptTemplateId" value="template-academic-flowchart">
+            </div>
+
+            <!-- Optional Seminar & Presenter Details for Mode B -->
+            <div class="form-group form-group-full" style="margin-top: 10px;">
+              <button type="button" id="btn-toggle-ppt-details" class="btn-toggle-details-card">
+                + Add Seminar &amp; Presenter Details (Optional)
+              </button>
+              <div id="ppt-details-container" class="ppt-details-box hidden">
+                <div class="ppt-details-header">
+                  <span class="ppt-details-title">🎓 Presenter &amp; Course Information</span>
+                  <button type="button" id="btn-copy-report-details-to-ppt" class="btn-copy-small">
+                    📋 Copy from Report Form
+                  </button>
+                  <span id="ppt-copied-badge" class="sample-badge hidden">&check; Copied!</span>
+                </div>
+                <div class="form-grid" style="margin-bottom: 0;">
+                  <div class="form-group">
+                    <label for="pptStudentName">Student Name</label>
+                    <input type="text" id="pptStudentName" placeholder="e.g. KAVIN KUMAR S">
+                  </div>
+                  <div class="form-group">
+                    <label for="pptRegisterNo">Register No.</label>
+                    <input type="text" id="pptRegisterNo" placeholder="e.g. 731622104045">
+                  </div>
+                  <div class="form-group">
+                    <label for="pptCourse">Course Code &amp; Name</label>
+                    <input type="text" id="pptCourse" placeholder="e.g. 23CBC26 / Data Warehousing and Data Mining">
+                  </div>
+                  <div class="form-group">
+                    <label for="pptFaculty">Course Faculty Name</label>
+                    <input type="text" id="pptFaculty" placeholder="e.g. Mr. D. Jotheeswaran, AP/CSBS">
+                  </div>
+                  <div class="form-group">
+                    <label for="pptDepartment">Program / Department</label>
+                    <input type="text" id="pptDepartment" placeholder="e.g. B.Tech Computer Science and Business Systems">
+                  </div>
+                  <div class="form-group">
+                    <label for="pptDate">Seminar Date</label>
+                    <input type="text" id="pptDate" placeholder="e.g. 23-08-2026">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" id="btn-generate-ppt-only" class="btn-generate-ppt">
+            <span id="btn-ppt-spinner" class="loader-spinner" style="display: none; width: 18px; height: 18px; border-width: 2px; border-top-color: #ffffff; border-color: rgba(255,255,255,0.2);"></span>
+            <span id="btn-ppt-text">⚡ Generate PowerPoint Presentation</span>
+          </button>
+        </form>
+
+        <!-- PPT-Only Multi-step Progress Tracker -->
+        <div id="ppt-progress-container" class="progress-card hidden" style="margin-top: 24px;">
+          <div class="steps-container">
+            <div class="steps-track"></div>
+            
+            <div id="ppt-step-1" class="step-node step-pending">
+              <div class="step-circle">1</div>
+              <div class="step-label">Analyze Topic</div>
+            </div>
+            
+            <div id="ppt-step-2" class="step-node step-pending">
+              <div class="step-circle">2</div>
+              <div class="step-label">Slide Content</div>
+            </div>
+            
+            <div id="ppt-step-3" class="step-node step-pending">
+              <div class="step-circle">3</div>
+              <div class="step-label">Build Flowchart</div>
+            </div>
+
+            <div id="ppt-step-4" class="step-node step-pending">
+              <div class="step-circle">4</div>
+              <div class="step-label">Assemble PPTX &amp; PDF</div>
+            </div>
+          </div>
+          
+          <div class="progress-status-box">
+            <div class="loader-spinner"></div>
+            <div id="ppt-progress-status-text">Analyzing topic and structuring outline...</div>
+          </div>
+        </div>
+
+        <!-- PPT-Only Success & Downloads Banner -->
+        <div id="ppt-success-container" class="success-banner hidden" style="margin-top: 24px;">
+          <div class="success-info">
+            <h3>&check; PowerPoint Presentation Ready!</h3>
+            <p>Your academic 16:9 presentation is generated with Times New Roman typography, square bullets, and connected flowchart.</p>
+          </div>
+          <div class="success-download-row">
+            <button type="button" id="btn-ppt-download-pptx" class="btn-download-pptx">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"/>
+                <path d="M6 4h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/>
+              </svg>
+              Download PowerPoint (.pptx)
+            </button>
+            <button type="button" id="btn-ppt-download-pdf" class="btn-download-ppt-pdf">
+              <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+              </svg>
+              Download PPT as PDF (.pdf)
+            </button>
+            <button type="button" id="btn-ppt-reset" class="btn-outline">
+              Create Another PPT
+            </button>
+          </div>
+
+          <!-- Interactive Slide Preview -->
+          <div id="ppt-only-preview-stage" style="margin-top: 18px;"></div>
+        </div>
+
+      </section>
+
+      <!-- Live Interactive Preview & Word Editor Section -->
+      <div id="preview-container" class="preview-section hidden">
+        
+        <!-- Word-Style Formatting Ribbon Toolbar -->
+        <div class="word-ribbon">
+          <div class="ribbon-title-badge">
+            <span>📝 MS Word Live Editor</span>
+            <small>Click any text to edit directly</small>
+          </div>
+
+            <div class="tool-group">
+              <select id="ribbon-font-style" class="ribbon-font-select" title="Report Font Style">
+                <option value="Times New Roman" selected>Times New Roman</option>
+                <option value="Arial">Arial</option>
+                <option value="Calibri">Calibri</option>
+                <option value="Georgia">Georgia</option>
+              </select>
+            </div>
+
+            <div class="tool-divider"></div>
+
+            <div class="tool-group">
+              <button type="button" class="ribbon-btn" data-command="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+              <button type="button" class="ribbon-btn" data-command="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+              <button type="button" class="ribbon-btn" data-command="underline" title="Underline (Ctrl+U)"><u>U</u></button>
+            </div>
+
+            <div class="tool-divider"></div>
+
+            <div class="tool-group">
+              <button type="button" class="ribbon-btn" data-command="justifyLeft" title="Align Left">
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 12.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
+              </button>
+              <button type="button" class="ribbon-btn" data-command="justifyCenter" title="Center">
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4 12.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
+              </button>
+              <button type="button" class="ribbon-btn" data-command="justifyRight" title="Align Right">
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M6 12.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-4-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm4-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-4-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
+              </button>
+              <button type="button" class="ribbon-btn" data-command="justifyFull" title="Justify">
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 12.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
+              </button>
+            </div>
+
+            <div class="tool-divider"></div>
+
+            <div class="tool-group">
+              <button type="button" class="ribbon-btn" data-command="insertUnorderedList" title="Bullet List">&bull; List</button>
+              <button type="button" class="ribbon-btn" data-command="insertOrderedList" title="Numbered List">1. List</button>
+              <button type="button" class="ribbon-btn" data-command="undo" title="Undo">↶ Undo</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-toolbar">
+          <div class="preview-tabs">
+            <button type="button" class="preview-tab-btn active" data-tab="all">All 3 Pages</button>
+            <button type="button" class="preview-tab-btn" data-tab="1">Page 1 (Abstract, Intro &amp; Theme)</button>
+            <button type="button" class="preview-tab-btn" data-tab="2">Page 2 (Diagram, Apps, Conclusion &amp; Refs)</button>
+            <button type="button" class="preview-tab-btn" data-tab="3">Page 3 (Presentation &amp; Rubric)</button>
+          </div>
+
+          <div class="preview-actions-group" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            <button type="button" id="btn-toggle-zoom" class="btn-zoom-toggle" title="Toggle between Fit Screen and 100% Size">
+              <span id="zoom-toggle-text">🔍 100% A4</span>
+            </button>
+            <button type="button" id="btn-download-pdf-bottom" class="btn-download-pdf" style="padding: 10px 18px; font-size: 0.92rem;">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                <path d="M4.603 14.087a.81.81 0 0 1-.438-.42c-.195-.388-.13-.776.08-1.102.198-.307.526-.568.897-.787a7.68 7.68 0 0 1 1.482-.645 19.697 19.697 0 0 0 1.062-2.227 7.269 7.269 0 0 1-.43-1.295c-.086-.4-.119-.796-.046-1.136.075-.354.274-.672.65-.823.192-.077.4-.12.602-.077a.7.7 0 0 1 .477.365c.088.164.12.356.127.538.007.188-.012.396-.047.614-.084.51-.27 1.134-.52 1.794a10.954 10.954 0 0 0 .98 1.686 5.753 5.753 0 0 1 1.334.05c.364.066.734.195.96.465.12.144.193.32.2.518.007.192-.047.382-.138.563a1.04 1.04 0 0 1-.354.416.856.856 0 0 1-.51.138c-.331-.014-.654-.196-.933-.417a5.712 5.712 0 0 1-.911-.95 11.651 11.651 0 0 0-1.997.406 11.307 11.307 0 0 1-1.02 1.51c-.292.35-.609.656-.927.787a.793.793 0 0 1-.58.029z"/>
+              </svg>
+              Download PDF (3 Pages)
+            </button>
+            <button type="button" id="btn-print-pdf-bottom" class="btn-print-pdf" style="padding: 10px 18px; font-size: 0.92rem;" title="Print or Save as crisp vector PDF using browser's native print">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+              </svg>
+              Print / Save Vector PDF
+            </button>
+            <button type="button" id="btn-download-bottom" class="btn-primary" style="padding: 10px 18px; font-size: 0.92rem;">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+              </svg>
+              Download Edited .doc File
+            </button>
+          </div>
+        </div>
+
+        <div class="sheets-wrapper" id="sheets-wrapper">
+          <!-- Page 1 Sheet -->
+          <div class="sheet-card" data-page="1">
+            <div class="sheet-label-tag">PAGE 1 OF 3 (Report Header, Abstract, Intro &amp; Theme)</div>
+            <div class="sheet-viewport">
+              <div id="preview-page-1" class="paper-sheet"></div>
+            </div>
+          </div>
+
+          <!-- Page 2 Sheet -->
+          <div class="sheet-card" data-page="2">
+            <div class="sheet-label-tag">PAGE 2 OF 3 (Architecture Diagram, Applications, Conclusion &amp; References)</div>
+            <div class="sheet-viewport">
+              <div id="preview-page-2" class="paper-sheet"></div>
+            </div>
+          </div>
+
+          <!-- Page 3 Sheet -->
+          <div class="sheet-card" data-page="3">
+            <div class="sheet-label-tag">PAGE 3 OF 3 (Letterhead, Details Table, Evaluation Rubric &amp; Notes)</div>
+            <div class="sheet-viewport">
+              <div id="preview-page-3" class="paper-sheet"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <p>Muthayammal Engineering College (Autonomous) &bull; Official Seminar Report Engine &bull; Designed to match COE/IQAC Document Standards</p>
+    </div>
+  </footer>
+
+  <!-- ====== PAYMENT MODAL ====== -->
+  <div id="payment-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="payment-modal-title">
+    <div class="payment-card">
+      <div class="payment-card-header">
+        <div id="payment-mode-badge" class="pay-mode-badge mode-badge-test">⚡ RAZORPAY TEST MODE</div>
+        <div class="payment-lock-icon">
+          <svg width="28" height="28" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+          </svg>
+        </div>
+        <h2 id="payment-modal-title">Choose Payment Method</h2>
+        <p class="payment-subtitle">Official COE/IQAC Format 3-Page Document &bull; Instant Access</p>
+      </div>
+
+      <div class="payment-summary-box">
+        <div class="payment-summary-row">
+          <span class="payment-summary-label">Student</span>
+          <span id="pay-student-name" class="payment-summary-value">—</span>
+        </div>
+        <div class="payment-summary-row">
+          <span class="payment-summary-label">Topic</span>
+          <span id="pay-topic" class="payment-summary-value topic-truncate">—</span>
+        </div>
+      </div>
+
+      <!-- ===== OPTION 1: Razorpay Payment ===== -->
+      <div class="access-option-card" id="razorpay-option">
+        <div class="access-option-header">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm-1 5v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8H1z"/>
+          </svg>
+          <span>Pay ₹5 with Razorpay</span>
+        </div>
+        <div class="access-option-fee">
+          <span class="fee-amount-inline">₹5</span>
+          <span class="fee-label-inline">Report Generation Fee</span>
+        </div>
+        <div class="upi-methods-pills" style="margin: 10px 0 12px;">
+          <span class="upi-pill">Google Pay</span>
+          <span class="upi-pill">PhonePe</span>
+          <span class="upi-pill">Paytm</span>
+          <span class="upi-pill">BHIM / UPI QR</span>
+          <span class="upi-pill">Cards &bull; NetBanking</span>
+        </div>
+
+        <!-- Payment Status Area -->
+        <div id="payment-status-area"></div>
+
+        <button type="button" id="btn-pay" class="btn-pay-primary">
+          <span id="pay-btn-spinner" class="loader-spinner" style="display:none; width:18px; height:18px; border-width:2px; border-top-color:#fff; border-color:rgba(255,255,255,0.3);"></span>
+          <svg id="pay-btn-icon" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm-1 5v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8H1z"/>
+          </svg>
+          <span id="pay-btn-text">Pay ₹5 &amp; Generate Report</span>
+        </button>
+      </div>
+
+      <!-- ===== DIVIDER ===== -->
+      <div class="access-option-divider">
+        <span>or</span>
+      </div>
+
+      <!-- ===== OPTION 2: Offline Cash Coupon ===== -->
+      <div class="access-option-card" id="coupon-option">
+        <div class="access-option-header">
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M0 4.5A1.5 1.5 0 0 1 1.5 3h13A1.5 1.5 0 0 1 16 4.5V6a.5.5 0 0 1-.5.5 1.5 1.5 0 0 0 0 3 .5.5 0 0 1 .5.5v1.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 11.5V10a.5.5 0 0 1 .5-.5 1.5 1.5 0 1 0 0-3A.5.5 0 0 1 0 6V4.5z"/>
+          </svg>
+          <span>Have a Coupon Code?</span>
+        </div>
+        <p style="margin: 0 0 8px; font-size: 0.82rem; color: var(--text-muted, #64748b);">Already paid ₹5 cash offline? Enter your single-use coupon to generate report directly.</p>
+
+        <!-- Coupon Status Area -->
+        <div id="coupon-status-area"></div>
+
+        <div class="coupon-input-row">
+          <input
+            type="text"
+            id="coupon-code-input"
+            class="coupon-input"
+            placeholder="e.g. OFF-X7K9-P2QM"
+            autocomplete="off"
+            spellcheck="false"
+            maxlength="60"
+          >
+          <button type="button" id="btn-apply-coupon" class="btn-apply-coupon">
+            <span id="coupon-btn-spinner" class="loader-spinner" style="display:none; width:14px; height:14px; border-width:2px; border-top-color:#fff; border-color:rgba(255,255,255,0.3);"></span>
+            <span id="coupon-btn-text">Apply Coupon</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ===== CANCEL ===== -->
+      <div class="payment-actions" style="margin-top: 16px;">
+        <button type="button" id="btn-cancel-payment" class="btn-cancel-pay">Cancel</button>
+      </div>
+
+      <div class="payment-secure-badge">
+        <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
+        256-bit SSL Encrypted &bull; Powered by Razorpay
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== HIDDEN ADMIN COUPON MODAL ====== -->
+  <div id="admin-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title">
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <div class="admin-badge">🔐 MEC ADMIN PORTAL</div>
+        <button type="button" id="btn-close-admin" class="modal-close-btn" aria-label="Close">&times;</button>
+        <h2 id="admin-modal-title">Admin Management</h2>
+        <p class="admin-subtitle">One-Time Offline Cash Coupon Generator &amp; Audit Dashboard</p>
+      </div>
+
+      <!-- View 1: Admin Login -->
+      <div id="admin-login-view" class="admin-view-section">
+        <div class="admin-login-box">
+          <h3 class="admin-view-title">ADMIN LOGIN</h3>
+          <div id="admin-login-status" style="margin-bottom: 12px;"></div>
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label for="admin-username">Username <span class="req-star">*</span></label>
+            <input type="text" id="admin-username" class="coupon-input" placeholder="Enter admin username" autocomplete="username">
+          </div>
+          <div class="form-group" style="margin-bottom: 18px;">
+            <label for="admin-password">Password <span class="req-star">*</span></label>
+            <input type="password" id="admin-password" class="coupon-input" placeholder="Enter admin password" autocomplete="current-password">
+          </div>
+          <button type="button" id="btn-admin-login" class="btn-pay-primary" style="width:100%;">
+            <span id="admin-login-spinner" class="loader-spinner" style="display:none; width:16px; height:16px; border-width:2px; border-top-color:#fff; border-color:rgba(255,255,255,0.3);"></span>
+            <span id="admin-login-text">Login</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- View 2: Admin Dashboard (Generated Reports, Offline Coupons, Coupon History) -->
+      <div id="admin-dashboard-view" class="admin-view-section hidden">
+        <div class="admin-coupon-panel">
+          
+          <!-- Admin Dashboard Top Header -->
+          <div class="admin-panel-top">
+            <div class="admin-cash-header">
+              <span class="admin-cash-pill">ADMIN DASHBOARD</span>
+              <span class="admin-cash-fee">Authenticated Session</span>
+            </div>
+            <button type="button" id="btn-admin-logout" class="btn-admin-logout" title="Logout &amp; Invalidate Session">
+              <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="display:inline-block; vertical-align:-2px; margin-right:4px;"><path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/><path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/></svg>
+              Logout
+            </button>
+          </div>
+
+          <!-- Admin Navigation Tabs -->
+          <div class="admin-nav-tabs">
+            <button type="button" class="admin-tab-btn active" data-admin-tab="overview">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/></svg>
+              Overview
+            </button>
+            <button type="button" class="admin-tab-btn" data-admin-tab="pricing">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 9.511c.076.954.83 1.697 2.182 1.785V12h.6v-.709c1.4-.098 2.218-.846 2.218-1.932 0-.987-.626-1.496-1.745-1.76l-.473-.112V5.57c.6.068.982.396 1.074.85h1.052c-.076-.919-.864-1.638-2.126-1.716V4h-.6v.719c-1.195.117-2.01.836-2.01 1.853 0 .9.606 1.472 1.613 1.707l.397.098v2.034c-.615-.093-1.022-.43-1.114-.9H5.5zm2.177-2.166c-.59-.137-.91-.416-.91-.836 0-.47.345-.822.915-.925v1.76h-.005zm.692 1.193c.717.166 1.048.435 1.048.91 0 .542-.412.914-1.135.982V8.518l.087.02z"/><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/></svg>
+              Pricing &amp; Payments
+            </button>
+            <button type="button" class="admin-tab-btn" data-admin-tab="coupons-log">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 1 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"/></svg>
+              Coupon Management (<span id="admin-coupons-count">0</span>)
+            </button>
+            <button type="button" class="admin-tab-btn" data-admin-tab="reports">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/></svg>
+              Generated Reports (<span id="admin-reports-count">0</span>)
+            </button>
+          </div>
+
+          <!-- TAB 0: OVERVIEW SUMMARY DASHBOARD -->
+          <div id="admin-panel-overview" class="admin-tab-content">
+            <div style="padding: 4px 0 14px;">
+              <div class="overview-grid">
+                <!-- Card 1: Report + PPT Pricing -->
+                <div class="overview-card">
+                  <div class="overview-card-title">Report + PPT Pricing</div>
+                  <div class="overview-card-val" id="ov-rp-price">₹5.00</div>
+                  <div class="overview-card-sub" id="ov-rp-mode"><span class="badge-active">Paid Mode</span></div>
+                </div>
+
+                <!-- Card 2: PPT Only Pricing -->
+                <div class="overview-card">
+                  <div class="overview-card-title">PPT Only Pricing</div>
+                  <div class="overview-card-val" id="ov-po-price">Free</div>
+                  <div class="overview-card-sub" id="ov-po-mode"><span class="badge-active">Free Mode</span></div>
+                </div>
+
+                <!-- Card 3: Payment Gateways -->
+                <div class="overview-card">
+                  <div class="overview-card-title">Payment Gateways</div>
+                  <div class="overview-card-val" style="font-size:1.05rem; margin-top:4px;">
+                    <span id="ov-gateway-badge" class="badge-active">Razorpay Active</span>
+                  </div>
+                  <div class="overview-card-sub" id="ov-methods-status">UPI: Enabled · Cards: Enabled</div>
+                </div>
+
+                <!-- Card 4: Coupons -->
+                <div class="overview-card">
+                  <div class="overview-card-title">Active Coupons</div>
+                  <div class="overview-card-val" id="ov-coupons-active">0</div>
+                  <div class="overview-card-sub" id="ov-coupons-total">Total coupons: 0</div>
+                </div>
+
+                <!-- Card 5: Total Revenue & Txns -->
+                <div class="overview-card">
+                  <div class="overview-card-title">Total Revenue</div>
+                  <div class="overview-card-val" id="ov-total-revenue">₹0</div>
+                  <div class="overview-card-sub" id="ov-txn-breakdown">0 Success · 0 Pending · 0 Failed</div>
+                </div>
+              </div>
+
+              <!-- Recent Transactions in Overview -->
+              <div class="admin-table-header-row" style="margin-top:16px; margin-bottom:10px;">
+                <h4 style="font-size:0.92rem; font-weight:700; color:#0f172a; margin:0;">Recent Payment Transactions</h4>
+                <button type="button" id="btn-refresh-overview" class="txn-refresh-btn">Refresh</button>
+              </div>
+              <div class="admin-table-wrapper" style="max-height: 250px;">
+                <table class="txn-table">
+                  <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Student</th>
+                      <th>Topic</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody id="overview-txns-table-body">
+                    <tr><td colspan="6" style="text-align:center;color:#64748b;padding:16px;">Loading overview...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 1: GENERATED REPORTS LIST -->
+          <div id="admin-panel-reports" class="admin-tab-content">
+            <!-- Search & Filters Bar -->
+            <div class="admin-filters-bar">
+              <input type="text" id="admin-reports-search" class="admin-search-input" placeholder="Search by Student Name, Register No, or Seminar Topic...">
+              <select id="admin-reports-filter-payment" class="admin-filter-select">
+                <option value="all">All Payment Methods</option>
+                <option value="razorpay">Razorpay Online (₹5)</option>
+                <option value="offline_coupon">Offline Cash Coupon</option>
+              </select>
+              <input type="date" id="admin-reports-filter-date" class="admin-date-input" title="Filter by Created Date">
+              <button type="button" id="btn-admin-reports-reset" class="btn-filter-reset">Reset</button>
+              <button type="button" id="btn-refresh-admin-reports" class="txn-refresh-btn" title="Refresh Reports List">
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
+                Refresh
+              </button>
+            </div>
+
+            <!-- Reports Table -->
+            <div class="admin-reports-table-wrapper">
+              <table class="admin-reports-table">
+                <thead>
+                  <tr>
+                    <th style="width: 15%;">Report ID</th>
+                    <th style="width: 20%;">Student Details</th>
+                    <th style="width: 25%;">Seminar Topic</th>
+                    <th style="width: 15%;">Payment</th>
+                    <th style="width: 13%;">Generated Date</th>
+                    <th style="width: 12%; text-align: center;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-reports-table-body">
+                  <tr><td colspan="6" style="text-align:center;color:#64748b;padding:24px;">No reports generated yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- TAB 2: COUPON MANAGEMENT -->
+          <div id="admin-panel-coupons-log" class="admin-tab-content hidden">
+            <div style="padding: 4px 0 14px;">
+              <p class="admin-help-text" style="margin-bottom:16px;">Create and manage coupon codes with percentage or fixed discounts, expiry dates, usage limits, and service restrictions.</p>
+
+              <!-- Section 1: Create Custom Coupon Card -->
+              <div class="coupon-create-card">
+                <h4 style="font-size:0.92rem; font-weight:700; color:#0f172a; margin:0 0 12px;">Create New Coupon</h4>
+                <div class="coupon-form-grid">
+                  <div>
+                    <label class="pricing-mode-label" for="new-coupon-code">Coupon Code <span style="color:#dc2626;">*</span></label>
+                    <input type="text" id="new-coupon-code" class="coupon-input" placeholder="e.g. SAVE50" maxlength="30" style="text-transform:uppercase;">
+                  </div>
+                  <div>
+                    <label class="pricing-mode-label" for="new-coupon-type">Discount Type</label>
+                    <select id="new-coupon-type" class="pricing-currency-select" style="width:100%;">
+                      <option value="fixed" selected>Fixed Amount (₹)</option>
+                      <option value="percentage">Percentage (%)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="pricing-mode-label" for="new-coupon-val">Discount Value <span style="color:#dc2626;">*</span></label>
+                    <input type="number" id="new-coupon-val" class="coupon-input" min="1" max="1000" step="1" value="5" placeholder="e.g. 5 or 50">
+                  </div>
+                  <div>
+                    <label class="pricing-mode-label" for="new-coupon-service">Applicable Service</label>
+                    <select id="new-coupon-service" class="pricing-currency-select" style="width:100%;">
+                      <option value="both" selected>Both Services</option>
+                      <option value="reportAndPpt">Report + PPT Only</option>
+                      <option value="pptOnly">PPT Only</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="pricing-mode-label" for="new-coupon-start">Start Date (Optional)</label>
+                    <input type="date" id="new-coupon-start" class="coupon-input">
+                  </div>
+                  <div>
+                    <label class="pricing-mode-label" for="new-coupon-expiry">Expiry Date (Optional)</label>
+                    <input type="date" id="new-coupon-expiry" class="coupon-input">
+                  </div>
+                  <div>
+                    <label class="pricing-mode-label" for="new-coupon-usage-limit">Total Usage Limit</label>
+                    <input type="number" id="new-coupon-usage-limit" class="coupon-input" min="0" value="0" placeholder="0 = unlimited">
+                  </div>
+                  <div>
+                    <label class="pricing-mode-label" for="new-coupon-user-limit">Per-User Limit</label>
+                    <input type="number" id="new-coupon-user-limit" class="coupon-input" min="1" value="1" placeholder="1">
+                  </div>
+                </div>
+
+                <div style="display:flex; gap:12px; align-items:center;">
+                  <button type="button" id="btn-create-custom-coupon" class="btn-pricing-save">
+                    <span id="btn-custom-coupon-spinner" class="loader-spinner" style="display:none; width:14px; height:14px; border-width:2px; border-top-color:#fff; border-color:rgba(255,255,255,0.3);"></span>
+                    <span id="btn-custom-coupon-text">Create Coupon</span>
+                  </button>
+                  <div id="create-coupon-status" class="pricing-save-status"></div>
+                </div>
+              </div>
+
+              <!-- Section 2: Quick Offline Cash Coupon Generator -->
+              <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:14px 18px; margin-bottom:18px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                  <div>
+                    <div style="font-size:0.9rem; font-weight:700; color:#0f172a;">Quick Offline Cash Coupon (₹5)</div>
+                    <div style="font-size:0.8rem; color:#64748b;">Generate single-use code for students who paid ₹5 cash offline.</div>
+                  </div>
+                  <button type="button" id="btn-generate-coupon" class="btn-generate-coupon" style="padding:8px 16px; font-size:0.85rem;">
+                    <span id="btn-gen-coupon-spinner" class="loader-spinner" style="display:none; width:14px; height:14px; border-width:2px; border-top-color:#fff; border-color:rgba(255,255,255,0.3);"></span>
+                    <span id="btn-gen-coupon-text">+ Generate Offline Code</span>
+                  </button>
+                </div>
+
+                <!-- Generated Coupon Result Display -->
+                <div id="admin-coupon-result" class="admin-coupon-result-box hidden" style="margin-top:12px;">
+                  <div class="admin-result-header">
+                    <span class="admin-result-success-text">Coupon Generated Successfully ✓</span>
+                  </div>
+                  <div class="admin-coupon-code-container">
+                    <span id="generated-coupon-display" class="generated-coupon-code">OFF-X7K9-P2QM</span>
+                    <button type="button" id="btn-copy-coupon" class="btn-copy-coupon" title="Copy coupon code">
+                      <span id="copy-btn-text">Copy Coupon</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section 3: Coupons Audit Table -->
+              <div class="admin-coupons-table-section" style="margin-top:0; padding-top:0; border-top:none;">
+                <div class="admin-table-header-row">
+                  <h4 style="font-size:0.92rem; font-weight:700; color:#0f172a; margin:0;">Active &amp; Past Coupons</h4>
+                  <button type="button" id="btn-refresh-admin-coupons" class="txn-refresh-btn" title="Refresh Log">Refresh</button>
+                </div>
+                <div class="admin-table-wrapper" style="max-height: 380px;">
+                  <table class="txn-table">
+                    <thead>
+                      <tr>
+                        <th>Code</th>
+                        <th>Discount</th>
+                        <th>Service</th>
+                        <th>Validity</th>
+                        <th>Redemptions</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="admin-coupons-table-body">
+                      <tr><td colspan="7" style="text-align:center;color:#64748b;padding:16px;">Loading coupons...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- TAB 4: PRICING & PAYMENTS -->
+          <div id="admin-panel-pricing" class="admin-tab-content hidden">
+            <div style="padding: 4px 0 14px;">
+              <p class="admin-help-text" style="margin-bottom:18px;">Configure pricing for each service independently. Changes apply to new requests only — in-flight orders are not affected. Set a service to <strong>Free</strong> to allow generation without payment.</p>
+
+              <!-- Service A: Report + PPT -->
+              <div class="pricing-service-card" id="pricing-card-report-ppt">
+                <div class="pricing-service-header">
+                  <div>
+                    <div class="pricing-service-name">
+                      <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="flex-shrink:0;"><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/></svg>
+                      Service A — Seminar Report + PPT
+                    </div>
+                    <div class="pricing-service-desc">Full 3-page seminar report in Word/PDF + complete PowerPoint presentation</div>
+                  </div>
+                  <div id="pricing-status-report-ppt" class="pricing-status-badge pricing-badge-paid">₹5 · Paid</div>
+                </div>
+
+                <div class="pricing-form-row">
+                  <div class="pricing-mode-group">
+                    <label class="pricing-mode-label">Pricing Mode</label>
+                    <div class="pricing-toggle-group">
+                      <label class="pricing-radio-label">
+                        <input type="radio" name="pricing-mode-rp" value="free" id="rp-mode-free"> Free
+                      </label>
+                      <label class="pricing-radio-label">
+                        <input type="radio" name="pricing-mode-rp" value="paid" id="rp-mode-paid" checked> Paid
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="pricing-amount-group" id="pricing-amount-group-rp">
+                    <label class="pricing-mode-label" for="pricing-amount-rp">Amount</label>
+                    <div class="pricing-amount-row">
+                      <select id="pricing-currency-rp" class="pricing-currency-select">
+                        <option value="INR" selected>₹ INR</option>
+                      </select>
+                      <input type="number" id="pricing-amount-rp" class="pricing-amount-input" min="1" max="1000" step="1" value="5" placeholder="e.g. 5">
+                      <span class="pricing-paise-hint" id="pricing-paise-hint-rp">= 500 paise</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pricing-action-row">
+                  <button type="button" class="btn-pricing-save" id="btn-save-pricing-rp">
+                    <span id="pricing-rp-spinner" class="loader-spinner" style="display:none; width:14px; height:14px; border-width:2px; border-top-color:#fff; border-color:rgba(255,255,255,0.3);"></span>
+                    <span id="pricing-rp-text">Save Changes</span>
+                  </button>
+                  <div id="pricing-rp-status" class="pricing-save-status"></div>
+                </div>
+                <div class="pricing-last-updated" id="pricing-last-updated-rp"></div>
+              </div>
+
+              <!-- Service B: PPT Only -->
+              <div class="pricing-service-card" id="pricing-card-ppt-only" style="margin-top:16px;">
+                <div class="pricing-service-header">
+                  <div>
+                    <div class="pricing-service-name">
+                      <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="flex-shrink:0;"><path d="M7 2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-1zM2 1a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2H2zm0 8a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H2zm.854-3.646a.5.5 0 0 1 0 .707l-.5.5a.5.5 0 0 1-.707-.707l.5-.5a.5.5 0 0 1 .707 0zm4.5 0a.5.5 0 0 1 .707 0l.5.5a.5.5 0 0 1-.707.707l-.5-.5a.5.5 0 0 1 0-.707zm0 4a.5.5 0 0 1 .707 0l.5.5a.5.5 0 0 1-.707.707l-.5-.5a.5.5 0 0 1 0-.707zm-4.5 0a.5.5 0 0 1 0 .707l-.5.5a.5.5 0 0 1-.707-.707l.5-.5a.5.5 0 0 1 .707 0zM7 10.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0-5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 8a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/></svg>
+                      Service B — PPT Only
+                    </div>
+                    <div class="pricing-service-desc">PowerPoint presentation slides only, without full seminar report</div>
+                  </div>
+                  <div id="pricing-status-ppt-only" class="pricing-status-badge pricing-badge-free">Free</div>
+                </div>
+
+                <div class="pricing-form-row">
+                  <div class="pricing-mode-group">
+                    <label class="pricing-mode-label">Pricing Mode</label>
+                    <div class="pricing-toggle-group">
+                      <label class="pricing-radio-label">
+                        <input type="radio" name="pricing-mode-po" value="free" id="po-mode-free" checked> Free
+                      </label>
+                      <label class="pricing-radio-label">
+                        <input type="radio" name="pricing-mode-po" value="paid" id="po-mode-paid"> Paid
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="pricing-amount-group" id="pricing-amount-group-po" style="display:none;">
+                    <label class="pricing-mode-label" for="pricing-amount-po">Amount</label>
+                    <div class="pricing-amount-row">
+                      <select id="pricing-currency-po" class="pricing-currency-select">
+                        <option value="INR" selected>₹ INR</option>
+                      </select>
+                      <input type="number" id="pricing-amount-po" class="pricing-amount-input" min="1" max="1000" step="1" value="5" placeholder="e.g. 5">
+                      <span class="pricing-paise-hint" id="pricing-paise-hint-po">= 500 paise</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pricing-action-row">
+                  <button type="button" class="btn-pricing-save" id="btn-save-pricing-po">
+                    <span id="pricing-po-spinner" class="loader-spinner" style="display:none; width:14px; height:14px; border-width:2px; border-top-color:#fff; border-color:rgba(255,255,255,0.3);"></span>
+                    <span id="pricing-po-text">Save Changes</span>
+                  </button>
+                  <div id="pricing-po-status" class="pricing-save-status"></div>
+                </div>
+                <div class="pricing-last-updated" id="pricing-last-updated-po"></div>
+              </div>
+
+              <!-- Payment Gateway & Methods Settings -->
+              <div class="payment-settings-card">
+                <div class="pricing-service-header">
+                  <div>
+                    <div class="pricing-service-name">
+                      <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm-1 5v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8H1z"/></svg>
+                      Payment Settings &amp; Gateway Configuration
+                    </div>
+                    <div class="pricing-service-desc">Enable or disable payment methods. Secret keys and credentials are kept server-side in environment variables.</div>
+                  </div>
+                </div>
+
+                <!-- Gateway Status Alert -->
+                <div id="gateway-status-alert" class="gateway-alert gateway-alert-success">
+                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
+                  <span id="gateway-status-text">Razorpay Gateway configured and active on server.</span>
+                </div>
+
+                <div class="method-checkbox-group">
+                  <label class="method-checkbox-label">
+                    <input type="checkbox" id="method-enable-upi" checked>
+                    <span>Enable UPI Payments (Google Pay, PhonePe, Paytm, BHIM Dynamic QR)</span>
+                  </label>
+                  <label class="method-checkbox-label">
+                    <input type="checkbox" id="method-enable-razorpay" checked>
+                    <span>Enable Razorpay Standard Gateway (Cards, NetBanking, Wallets)</span>
+                  </label>
+                </div>
+
+                <div class="pricing-action-row">
+                  <button type="button" class="btn-pricing-save" id="btn-save-payment-methods">
+                    <span id="save-methods-spinner" class="loader-spinner" style="display:none; width:14px; height:14px; border-width:2px; border-top-color:#fff; border-color:rgba(255,255,255,0.3);"></span>
+                    <span id="save-methods-text">Save Payment Settings</span>
+                  </button>
+                  <div id="save-methods-status" class="pricing-save-status"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== ADMIN FULL REPORT DETAILS VIEW MODAL ====== -->
+  <div id="admin-report-view-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="report-viewer-title">
+    <div class="report-viewer-card">
+      <div class="report-viewer-header">
+        <h3 id="report-viewer-title">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/></svg>
+          Seminar Report Details
+        </h3>
+        <button type="button" id="btn-close-report-view" class="modal-close-btn" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="report-viewer-body">
+        <!-- Metadata Overview Grid -->
+        <div id="report-viewer-meta" class="report-viewer-meta-grid">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Rendered Report Content -->
+        <div id="report-viewer-content">
+          <!-- Dynamically populated 3-page report sections -->
+        </div>
+      </div>
+
+      <div class="report-viewer-footer">
+        <button type="button" id="btn-viewer-download-pdf" class="btn-admin-action btn-admin-pdf" style="padding: 10px 18px; font-size: 0.92rem;">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/><path d="M4.603 14.087a.81.81 0 0 1-.438-.42c-.195-.388-.13-.776.08-1.102.198-.307.526-.568.897-.787a7.68 7.68 0 0 1 1.482-.645 19.697 19.697 0 0 0 1.062-2.227 7.269 7.269 0 0 1-.43-1.295c-.086-.4-.119-.796-.046-1.136.075-.354.274-.672.65-.823.192-.077.4-.12.602-.077a.7.7 0 0 1 .477.365c.088.164.12.356.127.538.007.188-.012.396-.047.614-.084.51-.27 1.134-.52 1.794a10.954 10.954 0 0 0 .98 1.686 5.753 5.753 0 0 1 1.334.05c.364.066.734.195.96.465.12.144.193.32.2.518.007.192-.047.382-.138.563a1.04 1.04 0 0 1-.354.416.856.856 0 0 1-.51.138c-.331-.014-.654-.196-.933-.417a5.712 5.712 0 0 1-.911-.95 11.651 11.651 0 0 0-1.997.406 11.307 11.307 0 0 1-1.02 1.51c-.292.35-.609.656-.927.787a.793.793 0 0 1-.58.029z"/></svg>
+          Download PDF
+        </button>
+        <button type="button" id="btn-viewer-close" class="btn-filter-reset" style="padding: 10px 18px; font-size: 0.92rem;">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== TRANSACTIONS DASHBOARD MODAL ====== -->
+  <div id="transactions-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="txn-modal-title">
+    <div class="transactions-card">
+      <div class="transactions-header">
+        <h2 id="txn-modal-title">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm-1 5v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8H1z"/></svg>
+          Transaction Dashboard
+        </h2>
+        <button type="button" id="btn-close-txn" class="modal-close-btn" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="txn-summary-row" id="txn-summary">
+        <div class="txn-stat"><span class="txn-stat-num" id="txn-total">0</span><span class="txn-stat-lbl">Total</span></div>
+        <div class="txn-stat txn-stat-success"><span class="txn-stat-num" id="txn-success">0</span><span class="txn-stat-lbl">Successful</span></div>
+        <div class="txn-stat txn-stat-failed"><span class="txn-stat-num" id="txn-failed">0</span><span class="txn-stat-lbl">Failed</span></div>
+        <div class="txn-stat txn-stat-pending"><span class="txn-stat-num" id="txn-pending">0</span><span class="txn-stat-lbl">Pending</span></div>
+        <div class="txn-stat txn-stat-revenue"><span class="txn-stat-num" id="txn-revenue">₹0</span><span class="txn-stat-lbl">Revenue</span></div>
+      </div>
+
+      <div class="txn-filters">
+        <button type="button" class="txn-filter-btn active" data-filter="all">All</button>
+        <button type="button" class="txn-filter-btn" data-filter="success">Successful</button>
+        <button type="button" class="txn-filter-btn" data-filter="failed">Failed</button>
+        <button type="button" class="txn-filter-btn" data-filter="cancelled">Cancelled</button>
+        <button type="button" class="txn-filter-btn" data-filter="pending">Pending</button>
+        <button type="button" id="btn-refresh-txn" class="txn-refresh-btn" title="Refresh">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
+          Refresh
+        </button>
+      </div>
+
+      <div class="txn-table-wrapper">
+        <table class="txn-table">
+          <thead>
+            <tr>
+              <th>Student Name</th>
+              <th>Seminar Topic</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Order ID</th>
+              <th>Payment ID</th>
+              <th>Date &amp; Time</th>
+            </tr>
+          </thead>
+          <tbody id="txn-table-body">
+            <tr><td colspan="7" class="txn-empty">No transactions yet. Generate a report to see payment history.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="assets/pptxgen.bundle.js"></script>
+  <script src="assets/mec-letterhead-base64.js"></script>
+  <!-- Tinos TTF base64 for embedded Times New Roman in jsPDF vector PDF export -->
+  <script src="assets/times-fonts-base64.js"></script>
+  <script src="js/diagram.js"></script>
+  <script src="js/doc-generator.js"></script>
+  <script src="js/ppt-generator.js"></script>
+  <script src="js/preview.js"></script>
+  <script src="js/smart-dropdowns.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/payment.js"></script>
+</body>
+</html>

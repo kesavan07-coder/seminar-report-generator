@@ -1,0 +1,1276 @@
+%PDF-1.3
+%ºß¬à
+3 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 960. 540.]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 2327
+>>
+stream
+0.200025 w
+0 G
+1. g
+0. 540. 960. -540. re
+f
+BT
+/F10 24 Tf
+27.5999999999999979 TL
+0. g
+36. 498. Td
+(Execution Governor Limits in Salesforce CRM :) Tj
+ET
+BT
+/F9 13 Tf
+14.9499999999999993 TL
+0. g
+40. 472. Td
+(Controlling resource consumption during Apex execution) Tj
+ET
+0.93 0.96 0.98 rg
+0.31 0.51 0.74 RG
+1.3999999999999999 w
+46. 452. m
+914. 452. l
+917.3137084989847381 452. 920. 449.3137084989847381 920. 446. c
+920. 406. l
+920. 402.6862915010152619 916.6862915010152619 400. 914. 400. c
+46. 400. l
+42.6862915010152406 400. 40. 403.3137084989847381 40. 406. c
+40. 446. l
+40. 449.3137084989847381 43.3137084989847594 452. 46. 452. c
+h
+B
+BT
+/F10 16 Tf
+18.3999999999999986 TL
+0. g
+258.3999999999998636 422. Td
+(Governor Limits = Runtime Restrictions on Salesforce Resources) Tj
+ET
+BT
+/F10 16 Tf
+18.3999999999999986 TL
+0. g
+44. 372. Td
+(•) Tj
+ET
+BT
+/F9 15.5 Tf
+17.8249999999999993 TL
+0. g
+62. 372. Td
+(Salesforce is a cloud-based CRM platform that uses a multi-tenant architecture, where many organizations share platform resources.) Tj
+ET
+BT
+/F10 16 Tf
+18.3999999999999986 TL
+0. g
+44. 332.5 Td
+(•) Tj
+ET
+BT
+/F9 15.5 Tf
+17.8249999999999993 TL
+0. g
+62. 332.5 Td
+(Governor limits prevent a single transaction from consuming an excessive amount of shared CPU, memory, database, or processing) Tj
+T* (resources.) Tj
+ET
+BT
+/F10 16 Tf
+18.3999999999999986 TL
+0. g
+44. 271.5 Td
+(•) Tj
+ET
+BT
+/F9 15.5 Tf
+17.8249999999999993 TL
+0. g
+62. 271.5 Td
+(Execution governor limits are applied while Apex code, triggers, and other platform processes are running.) Tj
+ET
+BT
+/F10 16 Tf
+18.3999999999999986 TL
+0. g
+44. 232. Td
+(•) Tj
+ET
+BT
+/F9 15.5 Tf
+17.8249999999999993 TL
+0. g
+62. 232. Td
+(Important limits include SOQL queries, SOSL queries, DML statements, DML records, CPU time, heap size, and callouts.) Tj
+ET
+BT
+/F10 16 Tf
+18.3999999999999986 TL
+0. g
+44. 192.5 Td
+(•) Tj
+ET
+BT
+/F9 15.5 Tf
+17.8249999999999993 TL
+0. g
+62. 192.5 Td
+(When an Apex transaction exceeds a governor limit, Salesforce stops the transaction and raises a runtime exception.) Tj
+ET
+BT
+/F10 16 Tf
+18.3999999999999986 TL
+0. g
+44. 153. Td
+(•) Tj
+ET
+BT
+/F9 15.5 Tf
+17.8249999999999993 TL
+0. g
+62. 153. Td
+(The purpose of these limits is to maintain platform performance, stability, reliability, and fair resource usage.) Tj
+ET
+BT
+/F9 10 Tf
+11.5 TL
+0.392 g
+915. 20. Td
+(1) Tj
+ET
+endstream
+endobj
+5 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 960. 540.]
+/Contents 6 0 R
+>>
+endobj
+6 0 obj
+<<
+/Length 3491
+>>
+stream
+1.3999999999999999 w
+0.31 0.51 0.74 RG
+1. g
+0. 540. 960. -540. re
+f
+BT
+/F10 24 Tf
+27.5999999999999979 TL
+0. g
+36. 498. Td
+(Major Execution Governor Limits :) Tj
+ET
+BT
+/F9 13 Tf
+14.9499999999999993 TL
+0. g
+40. 472. Td
+(Common limits that developers must consider when designing Apex applications) Tj
+ET
+0.31 0.51 0.74 rg
+40. 448. 880. -32. re
+f
+BT
+/F10 12.5 Tf
+14.3749999999999982 TL
+1. g
+115.125 427. Td
+(Limit) Tj
+ET
+BT
+/F10 12.5 Tf
+14.3749999999999982 TL
+1. g
+408.25 427. Td
+(Purpose) Tj
+ET
+BT
+/F10 12.5 Tf
+14.3749999999999982 TL
+1. g
+738.5 427. Td
+(Why It Matters) Tj
+ET
+0.98 0.98 0.99 rg
+40. 416. 880. -46. re
+f
+0.82 0.84 0.87 RG
+0.8 w
+40. 416. 880. -46. re
+S
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+95.1299999999999955 389. Td
+(SOQL Queries) Tj
+ET
+220. 416. m
+220. 370. l
+S
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+230. 389. Td
+(Controls the number of database queries in one transaction.) Tj
+ET
+640. 416. m
+640. 370. l
+S
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+650. 389. Td
+(Prevents excessive database access.) Tj
+ET
+1. g
+40. 370. 880. -46. re
+f
+0.82 0.84 0.87 RG
+0.8 w
+40. 370. 880. -46. re
+S
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+90.0699999999999932 343. Td
+(DML Statements) Tj
+ET
+220. 370. m
+220. 324. l
+S
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+230. 343. Td
+(Controls insert, update, delete, undelete and other DML operations.) Tj
+ET
+640. 370. m
+640. 324. l
+S
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+650. 343. Td
+(Encourages efficient bulk processing.) Tj
+ET
+0.98 0.98 0.99 rg
+40. 324. 880. -46. re
+f
+0.82 0.84 0.87 RG
+0.8 w
+40. 324. 880. -46. re
+S
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+103.0500000000000114 297. Td
+(DML Rows) Tj
+ET
+220. 324. m
+220. 278. l
+S
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+230. 297. Td
+(Limits the total number of records affected by DML.) Tj
+ET
+640. 324. m
+640. 278. l
+S
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+650. 297. Td
+(Prevents very large transactions.) Tj
+ET
+1. g
+40. 278. 880. -46. re
+f
+0.82 0.84 0.87 RG
+0.8 w
+40. 278. 880. -46. re
+S
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+105.1949999999999932 251. Td
+(CPU Time) Tj
+ET
+220. 278. m
+220. 232. l
+S
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+230. 251. Td
+(Controls processor time consumed by Apex and related execution.) Tj
+ET
+640. 278. m
+640. 232. l
+S
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+650. 251. Td
+(Protects shared computing resources.) Tj
+ET
+0.98 0.98 0.99 rg
+40. 232. 880. -46. re
+f
+0.82 0.84 0.87 RG
+0.8 w
+40. 232. 880. -46. re
+S
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+106.7349999999999994 205. Td
+(Heap Size) Tj
+ET
+220. 232. m
+220. 186. l
+S
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+230. 205. Td
+(Controls memory used for objects, collections, and data during execution.) Tj
+ET
+640. 232. m
+640. 186. l
+S
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+650. 205. Td
+(Prevents excessive memory consumption.) Tj
+ET
+1. g
+40. 186. 880. -46. re
+f
+0.82 0.84 0.87 RG
+0.8 w
+40. 186. 880. -46. re
+S
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+110.4749999999999943 159. Td
+(Callouts) Tj
+ET
+220. 186. m
+220. 140. l
+S
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+230. 159. Td
+(Limits external HTTP/web-service requests during a transaction.) Tj
+ET
+640. 186. m
+640. 140. l
+S
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+650. 159. Td
+(Helps control integration resources.) Tj
+ET
+BT
+/F11 12 Tf
+13.7999999999999989 TL
+0.196 g
+42. 55. Td
+(• Limits vary by execution context; synchronous and asynchronous Apex can have different resource limits.) Tj
+ET
+BT
+/F9 10 Tf
+11.5 TL
+0.392 g
+915. 20. Td
+(2) Tj
+ET
+endstream
+endobj
+7 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 960. 540.]
+/Contents 8 0 R
+>>
+endobj
+8 0 obj
+<<
+/Length 4957
+>>
+stream
+0.8 w
+0.82 0.84 0.87 RG
+1. g
+0. 540. 960. -540. re
+f
+BT
+/F10 24 Tf
+27.5999999999999979 TL
+0. g
+36. 498. Td
+(How Execution Governor Limits Work :) Tj
+ET
+BT
+/F9 13 Tf
+14.9499999999999993 TL
+0. g
+40. 472. Td
+(Explanation on the left and a simple execution flow on the right) Tj
+ET
+BT
+/F10 16.5 Tf
+18.9749999999999979 TL
+0. g
+42. 438. Td
+(LEFT — Explanation) Tj
+ET
+BT
+/F9 13 Tf
+14.9499999999999993 TL
+0. g
+42. 410. Td
+(1. A user action, trigger, API request, or automation starts an Apex transaction.) Tj
+ET
+BT
+/F9 13 Tf
+14.9499999999999993 TL
+0. g
+42. 378. Td
+(2. Salesforce creates an execution context and tracks the resources consumed by) Tj
+T* (that transaction.) Tj
+ET
+BT
+/F9 13 Tf
+14.9499999999999993 TL
+0. g
+42. 328. Td
+(3. Every SOQL query, DML operation, CPU operation, and memory allocation) Tj
+T* (counts toward the limits.) Tj
+ET
+BT
+/F9 13 Tf
+14.9499999999999993 TL
+0. g
+42. 278. Td
+(4. If the code remains within the limits, execution continues and the transaction) Tj
+T* (can complete successfully.) Tj
+ET
+BT
+/F9 13 Tf
+14.9499999999999993 TL
+0. g
+42. 228. Td
+(5. If any governor limit is exceeded, Salesforce throws a runtime exception and) Tj
+T* (the transaction fails.) Tj
+ET
+BT
+/F9 13 Tf
+14.9499999999999993 TL
+0. g
+42. 178. Td
+(6. Developers avoid these failures by bulkifying code, reducing queries and) Tj
+T* (DML, and using asynchronous Apex.) Tj
+ET
+BT
+/F10 16.5 Tf
+18.9749999999999979 TL
+0. g
+623.49249999999995 438. Td
+(RIGHT — Simple Flow Chart) Tj
+ET
+0.31 0.51 0.74 RG
+1.3999999999999999 w
+1. g
+596. 410. m
+864. 410. l
+867.3137084989847381 410. 870. 407.3137084989847381 870. 404. c
+870. 378. l
+870. 374.6862915010152619 866.6862915010152619 372. 864. 372. c
+596. 372. l
+592.6862915010152619 372. 590. 375.3137084989847381 590. 378. c
+590. 404. l
+590. 407.3137084989847381 593.3137084989847381 410. 596. 410. c
+h
+B
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+686.3849999999999909 387. Td
+(Transaction Starts) Tj
+ET
+0.31 0.51 0.74 RG
+1.3999999999999999 w
+730. 372. m
+730. 354. l
+S
+0.31 0.51 0.74 rg
+730. 354. m
+726. 359. l
+734. 359. l
+730. 354. l
+h
+B
+0.31 0.51 0.74 RG
+1.3999999999999999 w
+1. g
+596. 354. m
+864. 354. l
+867.3137084989847381 354. 870. 351.3137084989847381 870. 348. c
+870. 322. l
+870. 318.6862915010152619 866.6862915010152619 316. 864. 316. c
+596. 316. l
+592.6862915010152619 316. 590. 319.3137084989847381 590. 322. c
+590. 348. l
+590. 351.3137084989847381 593.3137084989847381 354. 596. 354. c
+h
+B
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+682.0950000000000273 331. Td
+(Apex / Trigger Runs) Tj
+ET
+0.31 0.51 0.74 RG
+1.3999999999999999 w
+730. 316. m
+730. 298. l
+S
+0.31 0.51 0.74 rg
+730. 298. m
+726. 303. l
+734. 303. l
+730. 298. l
+h
+B
+0.31 0.51 0.74 RG
+1.3999999999999999 w
+1. g
+596. 298. m
+864. 298. l
+867.3137084989847381 298. 870. 295.3137084989847381 870. 292. c
+870. 266. l
+870. 262.6862915010152619 866.6862915010152619 260. 864. 260. c
+596. 260. l
+592.6862915010152619 260. 590. 263.3137084989847381 590. 266. c
+590. 292. l
+590. 295.3137084989847381 593.3137084989847381 298. 596. 298. c
+h
+B
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+674.7250000000000227 275. Td
+(Resources Are Counted) Tj
+ET
+0.31 0.51 0.74 RG
+1.3999999999999999 w
+730. 260. m
+730. 242. l
+S
+0.31 0.51 0.74 rg
+730. 242. m
+726. 247. l
+734. 247. l
+730. 242. l
+h
+B
+0.31 0.51 0.74 RG
+1.3999999999999999 w
+1. g
+596. 242. m
+864. 242. l
+867.3137084989847381 242. 870. 239.3137084989847381 870. 236. c
+870. 210. l
+870. 206.6862915010152619 866.6862915010152619 204. 864. 204. c
+596. 204. l
+592.6862915010152619 204. 590. 207.3137084989847381 590. 210. c
+590. 236. l
+590. 239.3137084989847381 593.3137084989847381 242. 596. 242. c
+h
+B
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+669.9950000000000045 219. Td
+(Within Governor Limits?) Tj
+ET
+0.31 0.51 0.74 RG
+1.3999999999999999 w
+730. 204. m
+730. 186. l
+S
+0.31 0.51 0.74 rg
+730. 186. m
+726. 191. l
+734. 191. l
+730. 186. l
+h
+B
+0.31 0.51 0.74 RG
+1.3999999999999999 w
+1. g
+596. 186. m
+864. 186. l
+867.3137084989847381 186. 870. 183.3137084989847381 870. 180. c
+870. 154. l
+870. 150.6862915010152619 866.6862915010152619 148. 864. 148. c
+596. 148. l
+592.6862915010152619 148. 590. 151.3137084989847381 590. 154. c
+590. 180. l
+590. 183.3137084989847381 593.3137084989847381 186. 596. 186. c
+h
+B
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+691.2799999999999727 163. Td
+(Yes -> Complete) Tj
+ET
+0.31 0.51 0.74 RG
+1.3999999999999999 w
+730. 148. m
+730. 130. l
+S
+0.31 0.51 0.74 rg
+730. 130. m
+726. 135. l
+734. 135. l
+730. 130. l
+h
+B
+0.31 0.51 0.74 RG
+1.3999999999999999 w
+1. g
+596. 130. m
+864. 130. l
+867.3137084989847381 130. 870. 127.3137084989847381 870. 124. c
+870. 98. l
+870. 94.6862915010152619 866.6862915010152619 92. 864. 92. c
+596. 92. l
+592.6862915010152619 92. 590. 95.3137084989847381 590. 98. c
+590. 124. l
+590. 127.3137084989847381 593.3137084989847381 130. 596. 130. c
+h
+B
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+677.75 107. Td
+(No -> Limit Exception) Tj
+ET
+BT
+/F9 10 Tf
+11.5 TL
+0.392 g
+915. 20. Td
+(3) Tj
+ET
+endstream
+endobj
+9 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 960. 540.]
+/Contents 10 0 R
+>>
+endobj
+10 0 obj
+<<
+/Length 5117
+>>
+stream
+1.3999999999999999 w
+0.31 0.51 0.74 RG
+1. g
+0. 540. 960. -540. re
+f
+BT
+/F10 24 Tf
+27.5999999999999979 TL
+0. g
+36. 498. Td
+(Best Practices, Applications and Conclusion :) Tj
+ET
+BT
+/F9 13 Tf
+14.9499999999999993 TL
+0. g
+40. 472. Td
+(Writing Apex that works efficiently within Salesforce execution limits) Tj
+ET
+0.97 0.98 0.99 rg
+0.82 0.84 0.87 RG
+1.2 w
+46. 445. m
+314. 445. l
+317.3137084989847381 445. 320. 442.3137084989847381 320. 439. c
+320. 111. l
+320. 107.6862915010152619 316.6862915010152619 105. 314. 105. c
+46. 105. l
+42.6862915010152406 105. 40. 108.3137084989847381 40. 111. c
+40. 439. l
+40. 442.3137084989847381 43.3137084989847594 445. 46. 445. c
+h
+B
+BT
+/F10 15 Tf
+17.25 TL
+0. g
+135.4499999999999886 418. Td
+(Best Practices) Tj
+ET
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+52. 392. Td
+(•) Tj
+ET
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+64. 392. Td
+(Use bulkified Apex to process collections instead of) Tj
+T* (single records.) Tj
+ET
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+52. 354. Td
+(•) Tj
+ET
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+64. 354. Td
+(Avoid SOQL queries and DML statements inside loops.) Tj
+ET
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+52. 331. Td
+(•) Tj
+ET
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+64. 331. Td
+(Query only the fields and records that are actually) Tj
+T* (required.) Tj
+ET
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+52. 293. Td
+(•) Tj
+ET
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+64. 293. Td
+(Use Lists, Sets, and Maps to organize and reuse data) Tj
+T* (efficiently.) Tj
+ET
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+52. 255. Td
+(•) Tj
+ET
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+64. 255. Td
+(Use asynchronous Apex for suitable long-running or) Tj
+T* (large-volume operations.) Tj
+ET
+0.97 0.98 0.99 rg
+0.82 0.84 0.87 RG
+1.2 w
+346. 445. m
+614. 445. l
+617.3137084989847381 445. 620. 442.3137084989847381 620. 439. c
+620. 111. l
+620. 107.6862915010152619 616.6862915010152619 105. 614. 105. c
+346. 105. l
+342.6862915010152619 105. 340. 108.3137084989847381 340. 111. c
+340. 439. l
+340. 442.3137084989847381 343.3137084989847381 445. 346. 445. c
+h
+B
+BT
+/F10 15 Tf
+17.25 TL
+0. g
+439.7250000000000227 418. Td
+(Applications) Tj
+ET
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+352. 392. Td
+(•) Tj
+ET
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+364. 392. Td
+(Salesforce triggers and automated business processes.) Tj
+ET
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+352. 369. Td
+(•) Tj
+ET
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+364. 369. Td
+(Customer, sales, service, and account data processing.) Tj
+ET
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+352. 346. Td
+(•) Tj
+ET
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+364. 346. Td
+(Large-volume data operations and scheduled jobs.) Tj
+ET
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+352. 323. Td
+(•) Tj
+ET
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+364. 323. Td
+(Integration with external systems through callouts.) Tj
+ET
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+352. 300. Td
+(•) Tj
+ET
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+364. 300. Td
+(Custom CRM applications developed using Apex.) Tj
+ET
+0.97 0.98 0.99 rg
+0.82 0.84 0.87 RG
+1.2 w
+646. 445. m
+914. 445. l
+917.3137084989847381 445. 920. 442.3137084989847381 920. 439. c
+920. 111. l
+920. 107.6862915010152619 916.6862915010152619 105. 914. 105. c
+646. 105. l
+642.6862915010152619 105. 640. 108.3137084989847381 640. 111. c
+640. 439. l
+640. 442.3137084989847381 643.3137084989847381 445. 646. 445. c
+h
+B
+BT
+/F10 15 Tf
+17.25 TL
+0. g
+729.5249999999999773 418. Td
+(Key Takeaways) Tj
+ET
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+652. 392. Td
+(•) Tj
+ET
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+664. 392. Td
+(Governor limits protect the shared Salesforce) Tj
+T* (environment.) Tj
+ET
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+652. 354. Td
+(•) Tj
+ET
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+664. 354. Td
+(Limit exceptions usually indicate inefficient resource) Tj
+T* (usage.) Tj
+ET
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+652. 316. Td
+(•) Tj
+ET
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+664. 316. Td
+(Understanding limits helps developers design scalable) Tj
+T* (applications.) Tj
+ET
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+652. 278. Td
+(•) Tj
+ET
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+664. 278. Td
+(Efficient coding improves performance and reliability.) Tj
+ET
+BT
+/F10 11 Tf
+12.6499999999999986 TL
+0. g
+652. 255. Td
+(•) Tj
+ET
+BT
+/F9 11 Tf
+12.6499999999999986 TL
+0. g
+664. 255. Td
+(Governor limits are a design consideration, not simply a) Tj
+T* (restriction.) Tj
+ET
+0.93 0.96 0.98 rg
+0.31 0.51 0.74 RG
+1.3999999999999999 w
+46. 88. m
+914. 88. l
+917.3137084989847381 88. 920. 85.3137084989847381 920. 82. c
+920. 50. l
+920. 46.6862915010152619 916.6862915010152619 44. 914. 44. c
+46. 44. l
+42.6862915010152406 44. 40. 47.3137084989847381 40. 50. c
+40. 82. l
+40. 85.3137084989847381 43.3137084989847594 88. 46. 88. c
+h
+B
+BT
+/F10 11.5 Tf
+13.2249999999999996 TL
+0. g
+87.3900000000003274 62. Td
+(Conclusion: Understanding and respecting execution governor limits is essential for secure, scalable, reliable, and high-performing Salesforce CRM applications.) Tj
+ET
+BT
+/F9 10 Tf
+11.5 TL
+0.392 g
+915. 20. Td
+(4) Tj
+ET
+endstream
+endobj
+1 0 obj
+<</Type /Pages
+/Kids [3 0 R 5 0 R 7 0 R 9 0 R ]
+/Count 4
+>>
+endobj
+11 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+12 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+13 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+14 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+15 0 obj
+<<
+/Type /Font
+/BaseFont /Courier
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+16 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+17 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+18 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+19 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Roman
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+20 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+21 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Italic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+22 0 obj
+<<
+/Type /Font
+/BaseFont /Times-BoldItalic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+23 0 obj
+<<
+/Type /Font
+/BaseFont /ZapfDingbats
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+24 0 obj
+<<
+/Type /Font
+/BaseFont /Symbol
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+2 0 obj
+<<
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+/Font <<
+/F1 11 0 R
+/F2 12 0 R
+/F3 13 0 R
+/F4 14 0 R
+/F5 15 0 R
+/F6 16 0 R
+/F7 17 0 R
+/F8 18 0 R
+/F9 19 0 R
+/F10 20 0 R
+/F11 21 0 R
+/F12 22 0 R
+/F13 23 0 R
+/F14 24 0 R
+>>
+/XObject <<
+>>
+>>
+endobj
+25 0 obj
+<<
+/Producer (jsPDF 4.2.1)
+/CreationDate (D:20261011114014+05'30')
+>>
+endobj
+26 0 obj
+<<
+/Type /Catalog
+/Pages 1 0 R
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+>>
+endobj
+xref
+0 27
+0000000000 65535 f 
+0000016537 00000 n 
+0000018377 00000 n 
+0000000015 00000 n 
+0000000120 00000 n 
+0000002499 00000 n 
+0000002604 00000 n 
+0000006147 00000 n 
+0000006252 00000 n 
+0000011261 00000 n 
+0000011367 00000 n 
+0000016612 00000 n 
+0000016738 00000 n 
+0000016869 00000 n 
+0000017003 00000 n 
+0000017141 00000 n 
+0000017265 00000 n 
+0000017394 00000 n 
+0000017526 00000 n 
+0000017662 00000 n 
+0000017790 00000 n 
+0000017917 00000 n 
+0000018046 00000 n 
+0000018179 00000 n 
+0000018281 00000 n 
+0000018630 00000 n 
+0000018716 00000 n 
+trailer
+<<
+/Size 27
+/Root 26 0 R
+/Info 25 0 R
+/ID [ <7810551CD85AC1FB54CEAC11964DB4E0> <7810551CD85AC1FB54CEAC11964DB4E0> ]
+>>
+startxref
+18820
+%%EOF

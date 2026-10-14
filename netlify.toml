@@ -1,0 +1,69 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# API Route Redirects
+[[redirects]]
+  from = "/api/generate-content"
+  to = "/.netlify/functions/generate-content"
+  status = 200
+
+[[redirects]]
+  from = "/api/generate-ppt"
+  to = "/.netlify/functions/generate-ppt"
+  status = 200
+
+[[redirects]]
+  from = "/api/validate-coupon"
+  to = "/.netlify/functions/validate-coupon"
+  status = 200
+
+[[redirects]]
+  from = "/api/create-order"
+  to = "/.netlify/functions/create-order"
+  status = 200
+
+[[redirects]]
+  from = "/api/verify-payment"
+  to = "/.netlify/functions/verify-payment"
+  status = 200
+
+[[redirects]]
+  from = "/api/transactions"
+  to = "/.netlify/functions/transactions"
+  status = 200
+
+[[redirects]]
+  from = "/api/admin-pricing"
+  to = "/.netlify/functions/admin-pricing"
+  status = 200
+
+[[redirects]]
+  from = "/api/admin-coupon"
+  to = "/.netlify/functions/admin-coupon"
+  status = 200
+
+[[redirects]]
+  from = "/api/admin-reports"
+  to = "/.netlify/functions/admin-reports"
+  status = 200
+
+[[redirects]]
+  from = "/api/record-payment-status"
+  to = "/.netlify/functions/transactions"
+  status = 200
+
+# Security Headers Configuration
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(self \"https://checkout.razorpay.com\")"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://cdnjs.cloudflare.com; connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://*.razorpay.com; frame-src https://api.razorpay.com https://checkout.razorpay.com; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; object-src 'none'; base-uri 'self';"

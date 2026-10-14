@@ -1,0 +1,30 @@
+[
+  {
+    "id": "template-academic-flowchart",
+    "name": "Classic Academic Seminar",
+    "badge": "Template 1 • Flowchart Architecture",
+    "description": "Standard 16:9 academic seminar format with Times New Roman typography, Wingdings square bullets (❑), and a 5-to-6-step vertical connected process architecture flowchart in MEC steel blue (#4F81BD).",
+    "previewImage": "assets/templates/template-1-preview.png",
+    "features": [
+      "16:9 Widescreen & Times New Roman",
+      "Square Bullets (❑) & Uppercase Headings",
+      "Topic-Specific Vertical Connected Flowchart",
+      "Full-Slide Content Distribution (Zero Whitespace)"
+    ],
+    "isDefault": true
+  },
+  {
+    "id": "template-executive-grid",
+    "name": "Executive Technical Seminar",
+    "badge": "Template 2 • Multi-Column & Metric Cards",
+    "description": "Executive 16:9 technical format with high-impact headline banners, multi-column technical overview grid, numbered execution flow with decision branching, and 3-pillar Best Practices / Applications cards.",
+    "previewImage": "assets/templates/template-2-preview.png",
+    "features": [
+      "Executive Concept Callout Banner",
+      "3-Column Architectural Parameters Table",
+      "Numbered Process Flow & Decision Branching",
+      "3-Pillar Best Practices & Key Takeaways Cards"
+    ],
+    "isDefault": false
+  }
+]

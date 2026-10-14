@@ -1,0 +1,916 @@
+%PDF-1.3
+%ºß¬à
+3 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 960. 540.]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 1982
+>>
+stream
+0.200025 w
+0 G
+1. g
+0. 540. 960. -540. re
+f
+BT
+/F10 24 Tf
+27.5999999999999979 TL
+0. g
+36. 498. Td
+(DIMENSIONAL SPACE IN DATA WAREHOUSING AND DATA MINING :) Tj
+ET
+BT
+/F9 16.5 Tf
+18.9749999999999979 TL
+0. g
+36. 450. Td
+(Dimensional Space represents data using multiple dimensions or attributes so that complex business information can be analyzed from) Tj
+T* (different perspectives :) Tj
+ET
+0. G
+1.3 w
+36. 401.5 10. -10. re
+S
+BT
+/F9 16.5 Tf
+18.9749999999999979 TL
+0. g
+60. 390. Td
+(A dimension represents a perspective or characteristic used to analyze data, such as Time, Product, Customer, Location, or) Tj
+T* (Department.) Tj
+ET
+0. G
+1.3 w
+36. 338.5 10. -10. re
+S
+BT
+/F9 16.5 Tf
+18.9749999999999979 TL
+0. g
+60. 327. Td
+(In a data warehouse, dimensional models organize data around measurable business facts and descriptive dimensions.) Tj
+ET
+0. G
+1.3 w
+36. 298. 10. -10. re
+S
+BT
+/F9 16.5 Tf
+18.9749999999999979 TL
+0. g
+60. 286.5 Td
+(A fact table stores numerical measures such as sales amount, quantity, profit, or cost, while dimension tables provide descriptive) Tj
+T* (details.) Tj
+ET
+0. G
+1.3 w
+36. 235. 10. -10. re
+S
+BT
+/F9 16.5 Tf
+18.9749999999999979 TL
+0. g
+60. 223.5 Td
+(Dimensional space supports multidimensional analysis such as comparing sales by product, region, customer, and time.) Tj
+ET
+0. G
+1.3 w
+36. 194.5 10. -10. re
+S
+BT
+/F9 16.5 Tf
+18.9749999999999979 TL
+0. g
+60. 183. Td
+(Data can be viewed at different levels of detail through operations such as drill-down, roll-up, slice, and dice.) Tj
+ET
+0. G
+1.3 w
+36. 154. 10. -10. re
+S
+BT
+/F9 16.5 Tf
+18.9749999999999979 TL
+0. g
+60. 142.5 Td
+(In data mining, dimensional information helps identify patterns, relationships, trends, groups, and useful knowledge from large) Tj
+T* (datasets.) Tj
+ET
+0. G
+1.3 w
+36. 91. 10. -10. re
+S
+BT
+/F9 16.5 Tf
+18.9749999999999979 TL
+0. g
+60. 79.5 Td
+(It improves analytical queries, reporting, decision-making, and business intelligence by providing a structured view of data.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 960. 540.]
+/Contents 6 0 R
+>>
+endobj
+6 0 obj
+<<
+/Length 2423
+>>
+stream
+1.3 w
+0. G
+1. g
+0. 540. 960. -540. re
+f
+BT
+/F10 24 Tf
+27.5999999999999979 TL
+0. g
+36. 498. Td
+(INTRODUCTION :) Tj
+ET
+0. G
+1.3 w
+36. 455.5 10. -10. re
+S
+BT
+/F9 16 Tf
+18.3999999999999986 TL
+0. g
+60. 444. Td
+(Data Warehousing is the process of collecting, integrating, storing, and organizing data from multiple sources into a centralized) Tj
+T* (analytical repository.) Tj
+ET
+0. G
+1.3 w
+36. 403.5 10. -10. re
+S
+BT
+/F9 16 Tf
+18.3999999999999986 TL
+0. g
+60. 392. Td
+(Data Mining is the process of discovering useful patterns, relationships, trends, anomalies, and insights from large volumes of) Tj
+T* (structured and unstructured data.) Tj
+ET
+0. G
+1.3 w
+36. 351.5 10. -10. re
+S
+BT
+/F9 16 Tf
+18.3999999999999986 TL
+0. g
+60. 340. Td
+(Dimensional Space provides a multidimensional structure in which business data can be modeled, queried, and visualized from) Tj
+T* (multiple perspectives.) Tj
+ET
+0. G
+1.3 w
+36. 299.5 10. -10. re
+S
+BT
+/F9 16 Tf
+18.3999999999999986 TL
+0. g
+60. 288. Td
+(Common dimensions include Time, Product, Customer, Geography, Supplier, and Department, which provide rich contextual) Tj
+T* (attributes for numerical metrics.) Tj
+ET
+0. G
+1.3 w
+36. 247.5 10. -10. re
+S
+BT
+/F9 16 Tf
+18.3999999999999986 TL
+0. g
+60. 236. Td
+(The central business measurements are called facts or measures, such as revenue, transaction count, profit margin, operational cost,) Tj
+T* (and units sold.) Tj
+ET
+0. G
+1.3 w
+36. 195.5 10. -10. re
+S
+BT
+/F9 16 Tf
+18.3999999999999986 TL
+0. g
+60. 184. Td
+(A dimensional model commonly contains a Fact Table connected to several Dimension Tables in Star, Snowflake, or Fact) Tj
+T* (Constellation schema topologies.) Tj
+ET
+0. G
+1.3 w
+36. 143.5 10. -10. re
+S
+BT
+/F9 16 Tf
+18.3999999999999986 TL
+0. g
+60. 132. Td
+(Dimensions provide context to numerical measures and allow business analysts to navigate seamlessly between high-level summaries) Tj
+T* (and atomic details.) Tj
+ET
+0. G
+1.3 w
+36. 91.5 10. -10. re
+S
+BT
+/F9 16 Tf
+18.3999999999999986 TL
+0. g
+60. 80. Td
+(For example, total sales can be analyzed across calendar years, fiscal quarters, retail categories, customer tiers, and regional territories) Tj
+T* (simultaneously.) Tj
+ET
+0. G
+1.3 w
+36. 39.5 10. -10. re
+S
+BT
+/F9 16 Tf
+18.3999999999999986 TL
+0. g
+60. 28. Td
+(Dimensional analysis is fundamental for executive dashboards, OLAP cubes, business intelligence reporting, and advanced predictive) Tj
+T* (data science algorithms.) Tj
+ET
+endstream
+endobj
+7 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 960. 540.]
+/Contents 8 0 R
+>>
+endobj
+8 0 obj
+<<
+/Length 5601
+>>
+stream
+1.3 w
+0. G
+1. g
+0. 540. 960. -540. re
+f
+BT
+/F10 24 Tf
+27.5999999999999979 TL
+0. g
+36. 498. Td
+(DIMENSIONAL SPACE IN DATA WAREHOUSING AND DATA MINING ANALYSIS PROCESS :) Tj
+ET
+BT
+/F10 17 Tf
+19.5499999999999972 TL
+0. g
+42. 450. Td
+(FLOW CHART EXPLANATION :) Tj
+ET
+0. G
+1.2 w
+42. 427.5 8. -8. re
+S
+BT
+/F9 14.5 Tf
+16.6749999999999972 TL
+0. g
+58. 418. Td
+(Data Sources – Collect data from operational databases, enterprise) Tj
+T* (applications, flat files, transaction logs, and external APIs.) Tj
+ET
+0. G
+1.2 w
+42. 378.6666666666666288 8. -8. re
+S
+BT
+/F9 14.5 Tf
+16.6749999999999972 TL
+0. g
+58. 369.1666666666666288 Td
+(ETL / Data Preparation – Extract, clean, transform, validate, and load raw) Tj
+T* (transactional data into the staging and analytical data warehouse environment.) Tj
+ET
+0. G
+1.2 w
+42. 329.8333333333333144 8. -8. re
+S
+BT
+/F9 14.5 Tf
+16.6749999999999972 TL
+0. g
+58. 320.3333333333333144 Td
+(Fact & Dimension Tables – Store measurable numerical business facts) Tj
+T* (alongside descriptive dimension tables in optimized Star or Snowflake) Tj
+T* (schemas.) Tj
+ET
+0. G
+1.2 w
+42. 261. 8. -8. re
+S
+BT
+/F9 14.5 Tf
+16.6749999999999972 TL
+0. g
+58. 251.5 Td
+(Multidimensional Analysis – Analyze business facts across dimensions such as) Tj
+T* (time, product lines, regional markets, customer demographics, and channels.) Tj
+ET
+0. G
+1.2 w
+42. 212.1666666666666856 8. -8. re
+S
+BT
+/F9 14.5 Tf
+16.6749999999999972 TL
+0. g
+58. 202.6666666666666856 Td
+(OLAP Operations – Utilize slice, dice, drill-down, roll-up, and pivot) Tj
+T* (operations to inspect data at atomic, intermediate, and executive aggregate) Tj
+T* (levels.) Tj
+ET
+0. G
+1.2 w
+42. 143.3333333333333712 8. -8. re
+S
+BT
+/F9 14.5 Tf
+16.6749999999999972 TL
+0. g
+58. 133.8333333333333712 Td
+(Data Mining – Apply classification, clustering, regression, and association rule) Tj
+T* (algorithms to extract actionable patterns and predictive models.) Tj
+ET
+0. G
+1.2 w
+42. 94.5000000000000568 8. -8. re
+S
+BT
+/F9 14.5 Tf
+16.6749999999999972 TL
+0. g
+58. 85.0000000000000568 Td
+(Business Insights – Convert analytical findings into executive intelligence,) Tj
+T* (strategic KPIs, competitive insights, and automated decision-making.) Tj
+ET
+BT
+/F10 17 Tf
+19.5499999999999972 TL
+0. g
+551.9099999999999682 450. Td
+(SIMPLE FLOW CHART :) Tj
+ET
+0.31 0.51 0.74 RG
+1.5 w
+1. g
+526. 418. m
+774. 418. l
+777.3137084989847381 418. 780. 415.3137084989847381 780. 412. c
+780. 386. l
+780. 382.6862915010152619 776.6862915010152619 380. 774. 380. c
+526. 380. l
+522.6862915010152619 380. 520. 383.3137084989847381 520. 386. c
+520. 412. l
+520. 415.3137084989847381 523.3137084989847381 418. 526. 418. c
+h
+B
+BT
+/F10 10 Tf
+11.5 TL
+0. g
+611.1499999999999773 395. Td
+(DATA SOURCES) Tj
+ET
+0.31 0.51 0.74 RG
+1.5 w
+650. 380. m
+650. 364. l
+S
+0.31 0.51 0.74 rg
+650. 364. m
+646. 369. l
+654. 369. l
+650. 364. l
+h
+B
+0.31 0.51 0.74 RG
+1.5 w
+1. g
+526. 364. m
+774. 364. l
+777.3137084989847381 364. 780. 361.3137084989847381 780. 358. c
+780. 332. l
+780. 328.6862915010152619 776.6862915010152619 326. 774. 326. c
+526. 326. l
+522.6862915010152619 326. 520. 329.3137084989847381 520. 332. c
+520. 358. l
+520. 361.3137084989847381 523.3137084989847381 364. 526. 364. c
+h
+B
+BT
+/F10 10 Tf
+11.5 TL
+0. g
+622.1000000000000227 347. Td
+(ETL / DATA) Tj
+-8.6500000000000021 -11.5 Td
+(PREPARATION) Tj
+ET
+0.31 0.51 0.74 RG
+1.5 w
+650. 326. m
+650. 310. l
+S
+0.31 0.51 0.74 rg
+650. 310. m
+646. 315. l
+654. 315. l
+650. 310. l
+h
+B
+0.31 0.51 0.74 RG
+1.5 w
+1. g
+526. 310. m
+774. 310. l
+777.3137084989847381 310. 780. 307.3137084989847381 780. 304. c
+780. 278. l
+780. 274.6862915010152619 776.6862915010152619 272. 774. 272. c
+526. 272. l
+522.6862915010152619 272. 520. 275.3137084989847381 520. 278. c
+520. 304. l
+520. 307.3137084989847381 523.3137084989847381 310. 526. 310. c
+h
+B
+BT
+/F10 10 Tf
+11.5 TL
+0. g
+600.4500000000000455 293. Td
+(FACT & DIMENSION) Tj
+29.9999999999999964 -11.5 Td
+(TABLES) Tj
+ET
+0.31 0.51 0.74 RG
+1.5 w
+650. 272. m
+650. 256. l
+S
+0.31 0.51 0.74 rg
+650. 256. m
+646. 261. l
+654. 261. l
+650. 256. l
+h
+B
+0.31 0.51 0.74 RG
+1.5 w
+1. g
+526. 256. m
+774. 256. l
+777.3137084989847381 256. 780. 253.3137084989847381 780. 250. c
+780. 224. l
+780. 220.6862915010152619 776.6862915010152619 218. 774. 218. c
+526. 218. l
+522.6862915010152619 218. 520. 221.3137084989847381 520. 224. c
+520. 250. l
+520. 253.3137084989847381 523.3137084989847381 256. 526. 256. c
+h
+B
+BT
+/F10 10 Tf
+11.5 TL
+0. g
+596.8999999999999773 239. Td
+(MULTIDIMENSIONAL) Tj
+27.9500000000000099 -11.5 Td
+(ANALYSIS) Tj
+ET
+0.31 0.51 0.74 RG
+1.5 w
+650. 218. m
+650. 202. l
+S
+0.31 0.51 0.74 rg
+650. 202. m
+646. 207. l
+654. 207. l
+650. 202. l
+h
+B
+0.31 0.51 0.74 RG
+1.5 w
+1. g
+526. 202. m
+774. 202. l
+777.3137084989847381 202. 780. 199.3137084989847381 780. 196. c
+780. 170. l
+780. 166.6862915010152619 776.6862915010152619 164. 774. 164. c
+526. 164. l
+522.6862915010152619 164. 520. 167.3137084989847381 520. 170. c
+520. 196. l
+520. 199.3137084989847381 523.3137084989847381 202. 526. 202. c
+h
+B
+BT
+/F10 10 Tf
+11.5 TL
+0. g
+614.9500000000000455 179. Td
+(DATA MINING) Tj
+ET
+0.31 0.51 0.74 RG
+1.5 w
+650. 164. m
+650. 148. l
+S
+0.31 0.51 0.74 rg
+650. 148. m
+646. 153. l
+654. 153. l
+650. 148. l
+h
+B
+0.31 0.51 0.74 RG
+1.5 w
+1. g
+526. 148. m
+774. 148. l
+777.3137084989847381 148. 780. 145.3137084989847381 780. 142. c
+780. 116. l
+780. 112.6862915010152619 776.6862915010152619 110. 774. 110. c
+526. 110. l
+522.6862915010152619 110. 520. 113.3137084989847381 520. 116. c
+520. 142. l
+520. 145.3137084989847381 523.3137084989847381 148. 526. 148. c
+h
+B
+BT
+/F10 10 Tf
+11.5 TL
+0. g
+626. 131. Td
+(BUSINESS) Tj
+-0.1000000000000014 -11.5 Td
+(INSIGHTS) Tj
+ET
+endstream
+endobj
+9 0 obj
+<</Type /Page
+/Parent 1 0 R
+/Resources 2 0 R
+/MediaBox [0 0 960. 540.]
+/Contents 10 0 R
+>>
+endobj
+10 0 obj
+<<
+/Length 2139
+>>
+stream
+1.5 w
+0.31 0.51 0.74 RG
+1. g
+0. 540. 960. -540. re
+f
+BT
+/F10 24 Tf
+27.5999999999999979 TL
+0. g
+36. 498. Td
+(CONCLUSION :) Tj
+ET
+0. G
+1.3 w
+36. 455.5 10. -10. re
+S
+BT
+/F9 16 Tf
+18.3999999999999986 TL
+0. g
+60. 444. Td
+(Dimensional Space provides a structured, mathematically sound way to represent and analyze complex multidimensional enterprise) Tj
+T* (data.) Tj
+ET
+0. G
+1.3 w
+36. 403.5 10. -10. re
+S
+BT
+/F9 16 Tf
+18.3999999999999986 TL
+0. g
+60. 392. Td
+(Data Warehousing uses dimensional schemas to organize numerical facts alongside descriptive context, optimizing both query speed) Tj
+T* (and intuitive reporting.) Tj
+ET
+0. G
+1.3 w
+36. 351.5 10. -10. re
+S
+BT
+/F9 16 Tf
+18.3999999999999986 TL
+0. g
+60. 340. Td
+(Core business dimensions such as Time, Product, Customer, and Geography provide diverse viewpoints for evaluating organizational) Tj
+T* (performance and growth.) Tj
+ET
+0. G
+1.3 w
+36. 299.5 10. -10. re
+S
+BT
+/F9 16 Tf
+18.3999999999999986 TL
+0. g
+60. 288. Td
+(Multidimensional OLAP operations like slice, dice, drill-down, and roll-up empower analysts to explore data interactively without) Tj
+T* (custom database queries.) Tj
+ET
+0. G
+1.3 w
+36. 247.5 10. -10. re
+S
+BT
+/F9 16 Tf
+18.3999999999999986 TL
+0. g
+60. 236. Td
+(Data Mining algorithms utilize normalized dimensional data structures to discover hidden correlations, market trends, customer) Tj
+T* (clusters, and predictive signals.) Tj
+ET
+0. G
+1.3 w
+36. 195.5 10. -10. re
+S
+BT
+/F9 16 Tf
+18.3999999999999986 TL
+0. g
+60. 184. Td
+(A rigorously designed dimensional warehouse drastically reduces computational query latencies, index overhead, and storage) Tj
+T* (fragmentation.) Tj
+ET
+0. G
+1.3 w
+36. 143.5 10. -10. re
+S
+BT
+/F9 16 Tf
+18.3999999999999986 TL
+0. g
+60. 132. Td
+(Dimensional Space remains the foundational architectural pillar for modern Cloud Data Lakes, Real-Time Business Intelligence, and) Tj
+T* (AI Analytics.) Tj
+ET
+0. G
+1.3 w
+36. 91.5 10. -10. re
+S
+BT
+/F9 16 Tf
+18.3999999999999986 TL
+0. g
+60. 80. Td
+(Overall, it bridges the gap between raw enterprise transactions and informed strategic decisions, transforming data into competitive) Tj
+T* (advantage.) Tj
+ET
+endstream
+endobj
+1 0 obj
+<</Type /Pages
+/Kids [3 0 R 5 0 R 7 0 R 9 0 R ]
+/Count 4
+>>
+endobj
+11 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+12 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+13 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+14 0 obj
+<<
+/Type /Font
+/BaseFont /Helvetica-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+15 0 obj
+<<
+/Type /Font
+/BaseFont /Courier
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+16 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+17 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-Oblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+18 0 obj
+<<
+/Type /Font
+/BaseFont /Courier-BoldOblique
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+19 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Roman
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+20 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Bold
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+21 0 obj
+<<
+/Type /Font
+/BaseFont /Times-Italic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+22 0 obj
+<<
+/Type /Font
+/BaseFont /Times-BoldItalic
+/Subtype /Type1
+/Encoding /WinAnsiEncoding
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+23 0 obj
+<<
+/Type /Font
+/BaseFont /ZapfDingbats
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+24 0 obj
+<<
+/Type /Font
+/BaseFont /Symbol
+/Subtype /Type1
+/FirstChar 32
+/LastChar 255
+>>
+endobj
+2 0 obj
+<<
+/ProcSet [/PDF /Text /ImageB /ImageC /ImageI]
+/Font <<
+/F1 11 0 R
+/F2 12 0 R
+/F3 13 0 R
+/F4 14 0 R
+/F5 15 0 R
+/F6 16 0 R
+/F7 17 0 R
+/F8 18 0 R
+/F9 19 0 R
+/F10 20 0 R
+/F11 21 0 R
+/F12 22 0 R
+/F13 23 0 R
+/F14 24 0 R
+>>
+/XObject <<
+>>
+>>
+endobj
+25 0 obj
+<<
+/Producer (jsPDF 4.2.1)
+/CreationDate (D:20261011113742+05'30')
+>>
+endobj
+26 0 obj
+<<
+/Type /Catalog
+/Pages 1 0 R
+/OpenAction [3 0 R /FitH null]
+/PageLayout /OneColumn
+>>
+endobj
+xref
+0 27
+0000000000 65535 f 
+0000012790 00000 n 
+0000014630 00000 n 
+0000000015 00000 n 
+0000000120 00000 n 
+0000002154 00000 n 
+0000002259 00000 n 
+0000004734 00000 n 
+0000004839 00000 n 
+0000010492 00000 n 
+0000010598 00000 n 
+0000012865 00000 n 
+0000012991 00000 n 
+0000013122 00000 n 
+0000013256 00000 n 
+0000013394 00000 n 
+0000013518 00000 n 
+0000013647 00000 n 
+0000013779 00000 n 
+0000013915 00000 n 
+0000014043 00000 n 
+0000014170 00000 n 
+0000014299 00000 n 
+0000014432 00000 n 
+0000014534 00000 n 
+0000014883 00000 n 
+0000014969 00000 n 
+trailer
+<<
+/Size 27
+/Root 26 0 R
+/Info 25 0 R
+/ID [ <8618A19FC75F183A7F855600632EC3BD> <8618A19FC75F183A7F855600632EC3BD> ]
+>>
+startxref
+15073
+%%EOF

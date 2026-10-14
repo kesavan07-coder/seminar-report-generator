@@ -1,0 +1,27 @@
+{
+  "name": "seminar-report-generator",
+  "version": "1.0.0",
+  "description": "Seminar Report Generator for Muthayammal Engineering College with multi-provider AI support and ₹5 Razorpay UPI / Coupon integration",
+  "main": "index.html",
+  "scripts": {
+    "dev": "node dev-server.js",
+    "start": "node dev-server.js",
+    "test": "node test/test-generator.js && node test/test-security.js && node test/test-ppt.js && node test/test-smart-dropdowns.js && node test/test-admin-pricing.js"
+  },
+  "keywords": [
+    "seminar-report",
+    "muthayammal-engineering-college",
+    "word-doc-generator",
+    "pdf-generator",
+    "serverless-ai",
+    "vercel",
+    "razorpay"
+  ],
+  "author": "MEC Student Tools",
+  "license": "MIT",
+  "dependencies": {
+    "jspdf": "^4.2.1",
+    "jszip": "^3.10.2",
+    "pptxgenjs": "^4.0.1"
+  }
+}
