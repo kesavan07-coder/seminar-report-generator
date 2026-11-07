@@ -360,10 +360,11 @@ function processYoupiWebhookEvent(eventPayload, signature, webhookSecret = getSe
     });
   }
 
-  if (eventType === 'RECONCILED') {
+  if (eventType === 'RECONCILED' || eventType === 'SUCCESS') {
     txn.status = 'success';
     txn.paymentStatus = 'RECONCILED';
     txn.settlementState = 'RECONCILED';
+
     if (utr) txn.utr = utr;
     if (paymentId) txn.paymentId = paymentId;
   } else if (eventType === 'OBSERVED_SUCCESS') {

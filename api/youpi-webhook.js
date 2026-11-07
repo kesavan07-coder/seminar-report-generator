@@ -25,12 +25,15 @@ function getWebhookSecret() {
 function verifyHmacSignature(rawBody, signature, secret) {
   if (!rawBody || !signature || !secret) return false;
   try {
+    const cleanSig = signature.startsWith('sha256=') ? signature.slice(7) : signature;
     const computed = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
-    return crypto.timingSafeEqual(Buffer.from(computed, 'utf8'), Buffer.from(signature, 'utf8'));
+    if (computed.length !== cleanSig.length) return false;
+    return crypto.timingSafeEqual(Buffer.from(computed, 'utf8'), Buffer.from(cleanSig, 'utf8'));
   } catch (e) {
     return false;
   }
 }
+
 
 async function handler(event, context) {
   if (event.httpMethod === 'OPTIONS') {

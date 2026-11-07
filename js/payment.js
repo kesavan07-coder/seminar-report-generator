@@ -3247,6 +3247,89 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Enter') submitUtrVerification();
   });
 
+  // ── YOUPI PG OFFICIAL INTEGRATION ──
+  // Step 3: Listen to browser payment events (For Frontend UX)
+  window.addEventListener('youpi:payment:success', (e) => {
+    const { order_id, amount_received, utr, payment_mode } = e.detail || {};
+    console.log(`[YouPI SDK] Payment confirmed for Order #${order_id}. UTR: ${utr}`);
+    const statusArea = getEl('upi-utr-status-area');
+    if (statusArea) {
+      statusArea.innerHTML = `<div class="payment-status payment-status-success"><span>Payment captured via YouPI (${escapeHtml(utr || 'Observed')}). Verifying settlement...</span></div>`;
+    }
+    if (order_id || currentOrderId) {
+      pollPaymentReconciliation(order_id || currentOrderId);
+    }
+  });
+
+  window.addEventListener('youpi:payment:failed', (e) => {
+    console.warn('[YouPI SDK] Payment failed:', e.detail);
+    const statusArea = getEl('upi-utr-status-area');
+    if (statusArea) {
+      statusArea.innerHTML = `<div class="payment-status payment-status-error"><span>Payment cancelled or expired: ${escapeHtml(e.detail?.reason || 'Failed')}</span></div>`;
+    }
+  });
+
+  window.addEventListener('youpi:payment:suspicious', (e) => {
+    console.warn('[YouPI SDK] Payment flagged for review:', e.detail);
+    const statusArea = getEl('upi-utr-status-area');
+    if (statusArea) {
+      statusArea.innerHTML = `<div class="payment-status payment-status-warning"><span>Payment received but flagged for review. Our team will verify shortly.</span></div>`;
+    }
+  });
+
+  // Step 4: Programmatic Invocation Youpi.pay({...})
+  function launchYoupiModalCheckout() {
+    if (typeof window.Youpi === 'undefined' || typeof window.Youpi.pay !== 'function') {
+      alert('YouPI PG SDK is initializing. You can also pay directly via QR or UPI apps below.');
+      return;
+    }
+
+    if (!currentOrderId) {
+      alert('Order is still initializing. Please wait a moment.');
+      return;
+    }
+
+    const studentName = pendingFormData ? (pendingFormData.studentName || pendingFormData.pptStudentName || 'Student') : 'Student';
+    const topic = pendingFormData ? (pendingFormData.topic || 'Seminar Report') : 'Seminar Report';
+    const service = (pendingFormData && pendingFormData._pptOnlyMode) ? 'pptOnly' : 'reportAndPpt';
+
+    const upiPayableEl = getEl('upi-payable-amount');
+    const amountStr = upiPayableEl ? upiPayableEl.textContent.replace(/[^\d.]/g, '') : '15';
+    const amountVal = parseFloat(amountStr) || 15;
+
+    window.Youpi.pay({
+      order_id: currentOrderId,
+      amount: amountVal,
+      currency: 'INR',
+      name: 'Seminar Report Generator',
+      description: `Seminar Document (${service === 'pptOnly' ? 'PPT Only' : 'Report + PPT'})`,
+      customer: {
+        name: studentName,
+        phone: '8124060284',
+        email: 'student@mec.edu.in'
+      },
+      metadata: {
+        topic: topic,
+        service: service
+      },
+      handler: function(response) {
+        console.log('[YouPI SDK] Modal handler success:', response);
+        const utrVal = response.utr || response.bank_reference || '';
+        if (utrVal) {
+          const utrInput = getEl('upi-utr-input');
+          if (utrInput) utrInput.value = utrVal;
+        }
+        pollPaymentReconciliation(currentOrderId);
+      },
+      onFailed: function(response) {
+        console.warn('[YouPI SDK] Modal payment failed:', response);
+      }
+    });
+  }
+
+  getEl('btn-youpi-modal-pay')?.addEventListener('click', launchYoupiModalCheckout);
+
+
   // Admin Payment Management Filter buttons
   document.querySelectorAll('.txn-filter-btn[data-pm-filter]').forEach(btn => {
     btn.addEventListener('click', () => {
