@@ -19,5 +19,9 @@ template_2_slide_*
 .coupons_store.json
 .reports_store.json
 .pricing_store.json
+.transactions_store.json
+**/.transactions_store.json
 dump-*
 analyze-*
+youpi-pg/
+
