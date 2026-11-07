@@ -20,25 +20,35 @@ function getPricingStoragePath() {
 }
 
 // ── Default Pricing & Payment Methods Configuration ──────────
+// BUG 2 FIX: Read prices from env vars so they survive Vercel cold starts.
+// Set these in Vercel project settings → Environment Variables:
+//   PRICE_REPORT_AND_PPT_PAISE = 1500
+//   PRICE_REPORT_ONLY_PAISE    = 1000
+//   PRICE_PPT_ONLY_PAISE       = 500
+//   MERCHANT_UPI_ID            = 8124060284@superyes
 function getDefaultPricing() {
+  const rapAmt = parseInt(process.env.PRICE_REPORT_AND_PPT_PAISE, 10) || 1500;
+  const roAmt  = parseInt(process.env.PRICE_REPORT_ONLY_PAISE, 10)    || 1000;
+  const poAmt  = parseInt(process.env.PRICE_PPT_ONLY_PAISE, 10)       || 500;
+
   return {
     reportAndPpt: {
-      mode: 'paid',               // 'free' | 'paid'
-      amountPaise: 1500,          // 1500 paise = ₹15 (PDF + PPT)
+      mode: 'paid',
+      amountPaise: rapAmt,
       currency: 'INR',
       lastUpdatedAt: null,
       lastUpdatedBy: 'system'
     },
     reportOnly: {
-      mode: 'paid',               // 'free' | 'paid'
-      amountPaise: 1000,          // 1000 paise = ₹10 (PDF Report Only)
+      mode: 'paid',
+      amountPaise: roAmt,
       currency: 'INR',
       lastUpdatedAt: null,
       lastUpdatedBy: 'system'
     },
     pptOnly: {
-      mode: 'paid',               // 'free' | 'paid'
-      amountPaise: 500,           // 500 paise = ₹5 (PPT Presentation Only)
+      mode: 'paid',
+      amountPaise: poAmt,
       currency: 'INR',
       lastUpdatedAt: null,
       lastUpdatedBy: 'system'

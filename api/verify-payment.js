@@ -111,16 +111,20 @@ async function handler(event, context) {
 
       try {
         const result = submitUtr(activeOrderId, utr, studentName);
+        // UTR submitted — but NOT verified. Payment is PENDING admin reconciliation.
+        // We NEVER return verified:true or paymentToken here — that only happens
+        // after admin manual reconcile (via /api/transactions) or YouPI RECONCILED webhook.
         return {
           statusCode: 200,
           headers: CORS_HEADERS,
           body: JSON.stringify({
-            verified: true,
-            message: 'UPI payment verified successfully.',
+            verified: false,
+            pending: true,
+            message: 'UTR submitted successfully. Your payment is pending verification by our team. You will be notified once reconciled.',
             orderId: activeOrderId,
             utr: result.transaction.utr,
-            settlementState: result.transaction.settlementState,
-            paymentToken: result.paymentToken
+            status: result.transaction.status,
+            settlementState: result.transaction.settlementState
           })
         };
       } catch (err) {
@@ -131,6 +135,7 @@ async function handler(event, context) {
         };
       }
     }
+
 
     // ── CASE 2: Razorpay Signature Verification ──
     const validOrder = validateOrderId(razorpay_order_id);

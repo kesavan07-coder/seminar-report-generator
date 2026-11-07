@@ -187,9 +187,11 @@ async function runTests() {
     assert.strictEqual(tokenCheck.valid, true);
   });
 
-  // ── 5. Direct UPI UTR Submission ──
-  console.log('\n--- 5. Direct UPI Payment & UTR Verification ---');
-  await testAsync('5.1 User pays via UPI and submits 12-digit UTR', async () => {
+  // ── 5. Direct UPI UTR Submission & Authoritative Verification ──
+  console.log('\n--- 5. Direct UPI Payment & Authoritative UTR Verification ---');
+  const testUtr = `4123${Date.now().toString().slice(-8)}`;
+
+  await testAsync('5.1 User pays via UPI and submits 12-digit UTR (Pending, NOT auto-verified)', async () => {
     const createRes = await createOrderApi.handler({
       httpMethod: 'POST',
       body: JSON.stringify({
@@ -205,7 +207,7 @@ async function runTests() {
       httpMethod: 'POST',
       body: JSON.stringify({
         orderId: orderData.orderId,
-        utr: '412389056712',
+        utr: testUtr,
         studentName: 'Sanjay Dutt',
         paymentMethod: 'upi'
       })
@@ -213,14 +215,56 @@ async function runTests() {
 
     const verifyData = JSON.parse(verifyRes.body);
     assert.strictEqual(verifyRes.statusCode, 200);
-    assert.strictEqual(verifyData.verified, true);
-    assert.strictEqual(verifyData.utr, '412389056712');
-    assert.strictEqual(verifyData.settlementState, 'RECONCILED');
-    assert(verifyData.paymentToken);
+    // Security Fix BUG 1: Must NOT be auto-verified from UTR alone
+    assert.strictEqual(verifyData.verified, false);
+    assert.strictEqual(verifyData.pending, true);
+    assert.strictEqual(verifyData.utr, testUtr);
+    assert.strictEqual(verifyData.settlementState, 'NOT_RECONCILED');
+    assert.strictEqual(verifyData.paymentToken, undefined);
 
-    const tokenValid = verifyPaymentToken(verifyData.paymentToken);
+    // After authoritative reconciliation by admin or gateway:
+    const reconciled = reconcilePayment(orderData.orderId, {
+      utr: testUtr,
+      adminUser: 'admin',
+      reason: 'Authoritative bank verification'
+    });
+    assert.strictEqual(reconciled.success, true);
+    assert.strictEqual(reconciled.transaction.settlementState, 'RECONCILED');
+    assert(reconciled.paymentToken);
+
+    const tokenValid = verifyPaymentToken(reconciled.paymentToken);
     assert.strictEqual(tokenValid.valid, true);
   });
+
+  await testAsync('5.2 Submitting duplicate reconciled UTR is strictly rejected', async () => {
+    const createRes = await createOrderApi.handler({
+      httpMethod: 'POST',
+      body: JSON.stringify({
+        studentName: 'Duplicate Attempter',
+        topic: 'Fraud Prevention in FinTech',
+        subject: 'Cybersecurity',
+        service: 'reportAndPpt'
+      })
+    });
+    const orderData = JSON.parse(createRes.body);
+
+    const verifyRes = await verifyPaymentApi.handler({
+      httpMethod: 'POST',
+      body: JSON.stringify({
+        orderId: orderData.orderId,
+        utr: testUtr, // Reused reconciled UTR from test 5.1
+        studentName: 'Duplicate Attempter',
+        paymentMethod: 'upi'
+      })
+    });
+
+    assert.strictEqual(verifyRes.statusCode, 400);
+    const verifyData = JSON.parse(verifyRes.body);
+    assert.strictEqual(verifyData.verified, false);
+    assert(verifyData.error.includes('already been used'));
+  });
+
+
 
   // ── 6. Two-Phase Settlement in YouPI ──
   console.log('\n--- 6. Two-Phase Settlement (OBSERVED_SUCCESS vs RECONCILED) ---');

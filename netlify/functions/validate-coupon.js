@@ -77,9 +77,10 @@ async function handler(event, context) {
     }
 
     const trimmedCode = couponCode.trim();
-    const serviceKey = service === 'pptOnly' ? 'pptOnly' : 'reportAndPpt';
+    // BUG 3 FIX: correctly map all three service types
+    const serviceKey = service === 'pptOnly' ? 'pptOnly' : (service === 'reportOnly' ? 'reportOnly' : 'reportAndPpt');
     const servicePricing = getServicePricing(serviceKey);
-    const originalPricePaise = servicePricing ? servicePricing.amountPaise : 500;
+    const originalPricePaise = servicePricing ? servicePricing.amountPaise : 1500;
     const now = new Date();
 
     // 1. Check Coupon Store (Offline Cash or Admin-Managed Custom Coupon)
@@ -163,21 +164,24 @@ async function handler(event, context) {
 
       // Service Compatibility check
       if (existingCoupon.applicable_service && existingCoupon.applicable_service !== 'both') {
-        if (existingCoupon.applicable_service === 'reportAndPpt' && serviceKey === 'pptOnly') {
-          return {
-            statusCode: 200,
-            headers: CORS_HEADERS,
-            body: JSON.stringify({ valid: false, error: 'This coupon is valid only for Seminar Report + PPT generation.' })
+        const applicableSvc = existingCoupon.applicable_service;
+        // Mismatch: coupon is for a specific service but user chose a different one
+        if (applicableSvc !== serviceKey) {
+          const svcLabels = {
+            reportAndPpt: 'Seminar Report + PPT generation',
+            reportOnly: 'Seminar Report PDF Only',
+            pptOnly: 'PPT Only presentations'
           };
-        }
-        if (existingCoupon.applicable_service === 'pptOnly' && serviceKey === 'reportAndPpt') {
+          const requiredLabel = svcLabels[applicableSvc] || applicableSvc;
           return {
             statusCode: 200,
             headers: CORS_HEADERS,
-            body: JSON.stringify({ valid: false, error: 'This coupon is valid only for PPT Only presentations.' })
+            body: JSON.stringify({ valid: false, error: `This coupon is valid only for ${requiredLabel}.` })
           };
         }
       }
+
+
 
       // Total Usage Limit check
       if (existingCoupon.usage_limit > 0 && (existingCoupon.used_count || 0) >= existingCoupon.usage_limit) {

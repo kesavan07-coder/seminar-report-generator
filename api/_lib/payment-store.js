@@ -272,7 +272,11 @@ function reconcilePayment(orderId, { utr = null, adminUser = 'admin', reason = '
 }
 
 /**
- * Submit UTR by student/customer
+ * Submit UTR by student/customer.
+ * SECURITY: This only records the UTR for admin review — it does NOT
+ * verify the payment or issue a token. The order stays PENDING until
+ * an admin manually reconciles it, or a genuine YouPI RECONCILED
+ * webhook event arrives with a matching orderId and settlementState.
  */
 function submitUtr(orderId, utr, studentName = '') {
   if (!orderId || !utr) throw new Error('Order ID and UTR are required.');
@@ -294,11 +298,21 @@ function submitUtr(orderId, utr, studentName = '') {
     });
   }
 
+  // Check for duplicate UTR submission already RECONCILED on another order
+  const duplicateTxn = Array.from(transactionStore.values()).find(
+    t => t.utr === cleanUtr && t.orderId !== orderId &&
+         (t.status === 'success' || t.settlementState === 'RECONCILED')
+  );
+  if (duplicateTxn) {
+    throw new Error('This UTR/reference number has already been used for another order. Please contact support.');
+  }
+
+  // Only record UTR — keep status as OBSERVED_SUCCESS (pending), NOT RECONCILED
   txn.utr = cleanUtr;
-  txn.status = 'success';
-  txn.paymentStatus = 'RECONCILED';
-  txn.settlementState = 'RECONCILED';
-  txn.paymentId = `UPI_${cleanUtr}`;
+  txn.status = 'OBSERVED_SUCCESS';
+  txn.paymentStatus = 'OBSERVED_SUCCESS';
+  txn.settlementState = 'NOT_RECONCILED';
+  txn.paymentId = null;
   txn.updatedAt = new Date().toISOString();
 
   if (!txn.auditTrail) txn.auditTrail = [];
@@ -306,14 +320,15 @@ function submitUtr(orderId, utr, studentName = '') {
     action: 'UTR_SUBMITTED',
     utr: cleanUtr,
     at: txn.updatedAt,
-    by: studentName || txn.studentName
+    by: studentName || txn.studentName,
+    note: 'Pending admin/gateway reconciliation before access is granted.'
   });
 
   transactionStore.set(orderId, txn);
   savePersistedTransactions();
 
-  const paymentToken = generatePaymentToken(orderId, txn.paymentId, cleanUtr);
-  return { success: true, transaction: txn, paymentToken };
+  // Return pending:true — NO paymentToken until genuinely RECONCILED
+  return { success: true, pending: true, transaction: txn, paymentToken: null };
 }
 
 /**

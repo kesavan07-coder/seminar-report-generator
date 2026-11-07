@@ -43,7 +43,7 @@ function escapeHtml(str) {
 }
 
 async function showPaymentModal(formData) {
-  pendingFormData = { ...formData, _pptOnlyMode: false };
+  pendingFormData = { ...formData, _pptOnlyMode: false, _service: 'reportAndPpt' };
 
   // Fetch current pricing
   const pricing = await fetchPublicPricing();
@@ -422,27 +422,36 @@ async function submitUtrVerification() {
       throw new Error(data.error || 'Payment verification failed.');
     }
 
-    if (data.verified && data.paymentToken) {
+    // UTR submitted — ALWAYS pending now. Only pollPaymentReconciliation can unlock.
+    // data.verified will be false and data.pending will be true for UTR submissions.
+    if (data.pending || !data.verified) {
+      if (statusArea) {
+        statusArea.innerHTML = `
+          <div class="payment-status payment-status-info">
+            <div style="font-weight:600;margin-bottom:4px;">✅ UTR Submitted — Awaiting Verification</div>
+            <div>Your UTR <strong>${escapeHtml(utrVal)}</strong> has been recorded.</div>
+            <div style="margin-top:6px;font-size:0.82rem;color:#6b7280;">
+              Your payment is being reviewed by our team. Document access will be granted automatically once verified.
+              <br/>Order ID: <code>${escapeHtml(currentOrderId)}</code>
+            </div>
+          </div>`;
+      }
+      // Start polling — document generation triggers only when RECONCILED with real token
+      pollPaymentReconciliation(currentOrderId);
+    } else if (data.verified && data.paymentToken) {
+      // This path is for future YouPI-initiated reconciliation responses, not UTR submission
       currentPaymentToken = data.paymentToken;
       paymentState = PaymentState.SUCCESS;
-
       if (statusArea) {
         statusArea.innerHTML = '<div class="payment-status payment-status-success"><span>Payment verified successfully! Generating your document...</span></div>';
       }
-
       await new Promise(r => setTimeout(r, 900));
       hidePaymentModal();
-
       if (pendingFormData && pendingFormData._pptOnlyMode && typeof pendingFormData._pptOnlyCallback === 'function') {
         pendingFormData._pptOnlyCallback(currentPaymentToken, currentOrderId);
       } else if (typeof window.generateReportAfterPayment === 'function') {
         window.generateReportAfterPayment(pendingFormData, currentPaymentToken, currentOrderId);
       }
-    } else {
-      if (statusArea) {
-        statusArea.innerHTML = `<div class="payment-status payment-status-info"><span>UTR submitted (${escapeHtml(utrVal)}). Awaiting bank reconciliation... Order ID: <code>${escapeHtml(currentOrderId)}</code></span></div>`;
-      }
-      pollPaymentReconciliation(currentOrderId);
     }
   } catch (err) {
     if (statusArea) {
@@ -451,11 +460,12 @@ async function submitUtrVerification() {
   } finally {
     if (btn) btn.disabled = false;
     if (spinner) spinner.style.display = 'none';
-    if (btnText) btnText.textContent = 'Verify & Download';
+    if (btnText) btnText.textContent = 'Verify &amp; Download';
   }
 }
 
 function pollPaymentReconciliation(orderId) {
+
   if (pollTimer) clearInterval(pollTimer);
   let attempts = 0;
   pollTimer = setInterval(async () => {
@@ -512,7 +522,17 @@ async function applyCoupon() {
   lockCouponButton('Validating...');
   getEl('coupon-status-area').innerHTML = '';
 
-  const service = (pendingFormData && pendingFormData._pptOnlyMode) ? 'pptOnly' : 'reportAndPpt';
+  // BUG 3 FIX: properly derive service from pendingFormData
+  let service = 'reportAndPpt';
+  if (pendingFormData) {
+    if (pendingFormData._service) {
+      service = pendingFormData._service;
+    } else if (pendingFormData._pptOnlyMode) {
+      service = 'pptOnly';
+    } else if (pendingFormData._reportOnlyMode) {
+      service = 'reportOnly';
+    }
+  }
 
   let result;
   try {
@@ -2992,7 +3012,7 @@ async function showPptPaymentModal(formData, onSuccess) {
   }
 
   // PPT is paid — reuse existing payment modal with modified label
-  pendingFormData = { ...formData, _pptOnlyMode: true, _pptOnlyCallback: onSuccess };
+  pendingFormData = { ...formData, _pptOnlyMode: true, _pptOnlyCallback: onSuccess, _service: 'pptOnly' };
 
   const amountRupees = (pptPricing.amountPaise / 100).toFixed(0);
 
