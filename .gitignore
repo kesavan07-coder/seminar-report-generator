@@ -47,6 +47,11 @@ analyze-*.js
 .coupons_store.json
 .reports_store.json
 .pricing_store.json
+.transactions_store.json
+**/.coupons_store.json
+**/.reports_store.json
+**/.pricing_store.json
+**/.transactions_store.json
 
 # Large generated artifacts
 *.pptx

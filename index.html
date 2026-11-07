@@ -12,6 +12,7 @@
   <!-- Embedded Tinos (Times New Roman metric-compatible) base64 WOFF2 — guarantees font on all devices -->
   <link rel="stylesheet" href="css/fonts.css">
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles-youpi.css">
 </head>
 <body>
 
@@ -851,37 +852,86 @@
         </div>
       </div>
 
-      <!-- ===== OPTION 1: Razorpay Payment ===== -->
-      <div class="access-option-card" id="razorpay-option">
-        <div class="access-option-header">
-          <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm-1 5v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8H1z"/>
-          </svg>
-          <span>Pay ₹5 with Razorpay</span>
-        </div>
-        <div class="access-option-fee">
-          <span class="fee-amount-inline">₹5</span>
-          <span class="fee-label-inline">Report Generation Fee</span>
-        </div>
-        <div class="upi-methods-pills" style="margin: 10px 0 12px;">
-          <span class="upi-pill">Google Pay</span>
-          <span class="upi-pill">PhonePe</span>
-          <span class="upi-pill">Paytm</span>
-          <span class="upi-pill">BHIM / UPI QR</span>
-          <span class="upi-pill">Cards &bull; NetBanking</span>
+      <!-- ===== OPTION 1: Direct UPI / QR Pay (8124060284@superyes) ===== -->
+      <div class="access-option-card upi-primary-option" id="upi-direct-option">
+        <div class="access-option-header" style="justify-content: space-between; margin-bottom: 8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="background:#16a34a; color:#fff; font-size:0.72rem; font-weight:800; padding:2px 7px; border-radius:4px;">INSTANT</span>
+            <span style="font-size:1.02rem; font-weight:700; color:#0f172a;">Pay via UPI / Dynamic QR</span>
+          </div>
+          <div class="access-option-fee">
+            <span class="fee-amount-inline" id="upi-payable-amount">₹15</span>
+          </div>
         </div>
 
-        <!-- Payment Status Area -->
-        <div id="payment-status-area"></div>
+        <div class="upi-id-badge-row">
+          <div class="upi-id-display">
+            <span class="upi-id-label">UPI ID:</span>
+            <strong id="display-merchant-upi-id" class="upi-id-val">8124060284@superyes</strong>
+          </div>
+          <button type="button" id="btn-copy-upi-id" class="btn-copy-upi" title="Copy UPI ID">
+            📋 Copy UPI ID
+          </button>
+        </div>
 
-        <button type="button" id="btn-pay" class="btn-pay-primary">
-          <span id="pay-btn-spinner" class="loader-spinner" style="display:none; width:18px; height:18px; border-width:2px; border-top-color:#fff; border-color:rgba(255,255,255,0.3);"></span>
-          <svg id="pay-btn-icon" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm-1 5v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8H1z"/>
-          </svg>
-          <span id="pay-btn-text">Pay ₹5 &amp; Generate Report</span>
-        </button>
+        <!-- Dynamic QR Code Container -->
+        <div class="upi-qr-container" id="upi-qr-box">
+          <div class="upi-qr-wrapper">
+            <img id="upi-dynamic-qr-img" src="" alt="Scan to Pay via UPI" width="180" height="180" style="display:none; margin:0 auto; border-radius:8px;">
+            <div id="upi-qr-loading" class="upi-qr-placeholder">
+              <span class="loader-spinner" style="width:24px; height:24px; border-width:2px;"></span>
+              <p style="font-size:0.75rem; color:#64748b; margin-top:8px;">Generating Dynamic QR...</p>
+            </div>
+          </div>
+          <p class="upi-scan-note">Scan with <strong>Google Pay</strong>, <strong>PhonePe</strong>, <strong>Paytm</strong>, or <strong>BHIM</strong></p>
+        </div>
+
+        <!-- Quick Intent Pay Buttons for Mobile -->
+        <div class="upi-intent-buttons-row">
+          <a id="btn-upi-intent-generic" href="#" class="btn-upi-app btn-upi-generic">
+            ⚡ Open UPI App
+          </a>
+          <a id="btn-upi-intent-gpay" href="#" class="btn-upi-app btn-upi-gpay">
+            Google Pay
+          </a>
+          <a id="btn-upi-intent-phonepe" href="#" class="btn-upi-app btn-upi-phonepe">
+            PhonePe
+          </a>
+          <a id="btn-upi-intent-paytm" href="#" class="btn-upi-app btn-upi-paytm">
+            Paytm
+          </a>
+        </div>
+
+        <!-- UTR Entry Form -->
+        <div class="upi-utr-form-box">
+          <label for="upi-utr-input" class="upi-utr-label">
+            After paying, enter 12-digit UTR / UPI Ref Number:
+          </label>
+          <div class="upi-utr-input-row">
+            <input type="text" id="upi-utr-input" class="coupon-input" placeholder="e.g. 412389056712" maxlength="30" autocomplete="off">
+            <button type="button" id="btn-submit-utr" class="btn-pay-primary" style="padding:10px 18px; margin:0; width:auto; white-space:nowrap;">
+              <span id="utr-btn-spinner" class="loader-spinner" style="display:none; width:14px; height:14px; border-width:2px; border-top-color:#fff;"></span>
+              <span id="utr-btn-text">Verify &amp; Download</span>
+            </button>
+          </div>
+          <div id="upi-utr-status-area" style="margin-top:8px;"></div>
+        </div>
       </div>
+
+      <!-- Option 1B: Razorpay Alternate -->
+      <details class="razorpay-accordion" id="razorpay-accordion-opt">
+        <summary class="razorpay-accordion-summary">
+          <span>💳 Or pay with Cards / NetBanking / Razorpay</span>
+        </summary>
+        <div class="access-option-card" id="razorpay-option" style="margin-top:10px; border-top:1px solid #e2e8f0;">
+          <div id="payment-status-area"></div>
+          <button type="button" id="btn-pay" class="btn-pay-primary" style="margin-top:8px;">
+            <span id="pay-btn-spinner" class="loader-spinner" style="display:none; width:18px; height:18px; border-width:2px; border-top-color:#fff; border-color:rgba(255,255,255,0.3);"></span>
+            <svg id="pay-btn-icon" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm-1 5v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8H1z"/></svg>
+            <span id="pay-btn-text">Pay via Razorpay</span>
+          </button>
+        </div>
+      </details>
 
       <!-- ===== DIVIDER ===== -->
       <div class="access-option-divider">
@@ -993,6 +1043,10 @@
             <button type="button" class="admin-tab-btn" data-admin-tab="reports">
               <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/></svg>
               Generated Reports (<span id="admin-reports-count">0</span>)
+            </button>
+            <button type="button" class="admin-tab-btn" data-admin-tab="payments">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm-1 5v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8H1z"/></svg>
+              Payment Management (<span id="admin-payments-count">0</span>)
             </button>
           </div>
 
@@ -1219,10 +1273,43 @@
           <!-- TAB 4: PRICING & PAYMENTS -->
           <div id="admin-panel-pricing" class="admin-tab-content hidden">
             <div style="padding: 4px 0 14px;">
-              <p class="admin-help-text" style="margin-bottom:18px;">Configure pricing for each service independently. Changes apply to new requests only — in-flight orders are not affected. Set a service to <strong>Free</strong> to allow generation without payment.</p>
+              <p class="admin-help-text" style="margin-bottom:18px;">Configure pricing for each service independently. Set a service to <strong>Free</strong> to allow generation without payment. Configure your Merchant UPI ID to receive payments directly.</p>
+
+              <!-- Merchant UPI Configuration Card -->
+              <div class="pricing-service-card" id="pricing-card-upi-config" style="border-left: 4px solid #16a34a;">
+                <div class="pricing-service-header">
+                  <div>
+                    <div class="pricing-service-name" style="color: #166534;">
+                      <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="flex-shrink:0;"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm-1 5v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8H1z"/></svg>
+                      Merchant UPI Configuration
+                    </div>
+                    <div class="pricing-service-desc">UPI ID and business name where customer payments are received directly</div>
+                  </div>
+                  <div class="pricing-status-badge pricing-badge-paid" id="pricing-status-upi">UPI Active</div>
+                </div>
+
+                <div class="pricing-form-row" style="display:flex; flex-wrap:wrap; gap:16px;">
+                  <div style="flex:1; min-width:220px;">
+                    <label class="pricing-mode-label" for="admin-upi-id-input">Merchant UPI ID (VPA)</label>
+                    <input type="text" id="admin-upi-id-input" class="coupon-input" value="8124060284@superyes" placeholder="e.g. 8124060284@superyes">
+                  </div>
+                  <div style="flex:1; min-width:220px;">
+                    <label class="pricing-mode-label" for="admin-upi-name-input">Merchant / Business Name</label>
+                    <input type="text" id="admin-upi-name-input" class="coupon-input" value="Seminar Report Generator" placeholder="e.g. Seminar Report Generator">
+                  </div>
+                </div>
+
+                <div class="pricing-action-row" style="margin-top:12px;">
+                  <button type="button" class="btn-pricing-save" id="btn-save-upi-config">
+                    <span id="save-upi-spinner" class="loader-spinner" style="display:none; width:14px; height:14px; border-width:2px; border-top-color:#fff; border-color:rgba(255,255,255,0.3);"></span>
+                    <span id="save-upi-text">Save UPI Settings</span>
+                  </button>
+                  <div id="admin-upi-status" class="pricing-save-status"></div>
+                </div>
+              </div>
 
               <!-- Service A: Report + PPT -->
-              <div class="pricing-service-card" id="pricing-card-report-ppt">
+              <div class="pricing-service-card" id="pricing-card-report-ppt" style="margin-top:16px;">
                 <div class="pricing-service-header">
                   <div>
                     <div class="pricing-service-name">
@@ -1231,7 +1318,7 @@
                     </div>
                     <div class="pricing-service-desc">Full 3-page seminar report in Word/PDF + complete PowerPoint presentation</div>
                   </div>
-                  <div id="pricing-status-report-ppt" class="pricing-status-badge pricing-badge-paid">₹5 · Paid</div>
+                  <div id="pricing-status-report-ppt" class="pricing-status-badge pricing-badge-paid">₹15 · Paid</div>
                 </div>
 
                 <div class="pricing-form-row">
@@ -1253,8 +1340,8 @@
                       <select id="pricing-currency-rp" class="pricing-currency-select">
                         <option value="INR" selected>₹ INR</option>
                       </select>
-                      <input type="number" id="pricing-amount-rp" class="pricing-amount-input" min="1" max="1000" step="1" value="5" placeholder="e.g. 5">
-                      <span class="pricing-paise-hint" id="pricing-paise-hint-rp">= 500 paise</span>
+                      <input type="number" id="pricing-amount-rp" class="pricing-amount-input" min="1" max="1000" step="1" value="15" placeholder="e.g. 15">
+                      <span class="pricing-paise-hint" id="pricing-paise-hint-rp">= 1500 paise</span>
                     </div>
                   </div>
                 </div>
@@ -1269,17 +1356,17 @@
                 <div class="pricing-last-updated" id="pricing-last-updated-rp"></div>
               </div>
 
-              <!-- Service B: PPT Only -->
-              <div class="pricing-service-card" id="pricing-card-ppt-only" style="margin-top:16px;">
+              <!-- Service B: Seminar Report PDF Only -->
+              <div class="pricing-service-card" id="pricing-card-report-only" style="margin-top:16px;">
                 <div class="pricing-service-header">
                   <div>
                     <div class="pricing-service-name">
-                      <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="flex-shrink:0;"><path d="M7 2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-1zM2 1a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2H2zm0 8a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H2zm.854-3.646a.5.5 0 0 1 0 .707l-.5.5a.5.5 0 0 1-.707-.707l.5-.5a.5.5 0 0 1 .707 0zm4.5 0a.5.5 0 0 1 .707 0l.5.5a.5.5 0 0 1-.707.707l-.5-.5a.5.5 0 0 1 0-.707zm0 4a.5.5 0 0 1 .707 0l.5.5a.5.5 0 0 1-.707.707l-.5-.5a.5.5 0 0 1 0-.707zm-4.5 0a.5.5 0 0 1 0 .707l-.5.5a.5.5 0 0 1-.707-.707l.5-.5a.5.5 0 0 1 .707 0zM7 10.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0-5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 8a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/></svg>
-                      Service B — PPT Only
+                      <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="flex-shrink:0;"><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/></svg>
+                      Service B — Seminar Report PDF Only
                     </div>
-                    <div class="pricing-service-desc">PowerPoint presentation slides only, without full seminar report</div>
+                    <div class="pricing-service-desc">Official 3-page seminar report in Word/PDF format without PPT slides</div>
                   </div>
-                  <div id="pricing-status-ppt-only" class="pricing-status-badge pricing-badge-free">Free</div>
+                  <div id="pricing-status-report-only" class="pricing-status-badge pricing-badge-paid">₹10 · Paid</div>
                 </div>
 
                 <div class="pricing-form-row">
@@ -1287,15 +1374,63 @@
                     <label class="pricing-mode-label">Pricing Mode</label>
                     <div class="pricing-toggle-group">
                       <label class="pricing-radio-label">
-                        <input type="radio" name="pricing-mode-po" value="free" id="po-mode-free" checked> Free
+                        <input type="radio" name="pricing-mode-ro" value="free" id="ro-mode-free"> Free
                       </label>
                       <label class="pricing-radio-label">
-                        <input type="radio" name="pricing-mode-po" value="paid" id="po-mode-paid"> Paid
+                        <input type="radio" name="pricing-mode-ro" value="paid" id="ro-mode-paid" checked> Paid
                       </label>
                     </div>
                   </div>
 
-                  <div class="pricing-amount-group" id="pricing-amount-group-po" style="display:none;">
+                  <div class="pricing-amount-group" id="pricing-amount-group-ro">
+                    <label class="pricing-mode-label" for="pricing-amount-ro">Amount</label>
+                    <div class="pricing-amount-row">
+                      <select id="pricing-currency-ro" class="pricing-currency-select">
+                        <option value="INR" selected>₹ INR</option>
+                      </select>
+                      <input type="number" id="pricing-amount-ro" class="pricing-amount-input" min="1" max="1000" step="1" value="10" placeholder="e.g. 10">
+                      <span class="pricing-paise-hint" id="pricing-paise-hint-ro">= 1000 paise</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pricing-action-row">
+                  <button type="button" class="btn-pricing-save" id="btn-save-pricing-ro">
+                    <span id="pricing-ro-spinner" class="loader-spinner" style="display:none; width:14px; height:14px; border-width:2px; border-top-color:#fff; border-color:rgba(255,255,255,0.3);"></span>
+                    <span id="pricing-ro-text">Save Changes</span>
+                  </button>
+                  <div id="pricing-ro-status" class="pricing-save-status"></div>
+                </div>
+                <div class="pricing-last-updated" id="pricing-last-updated-ro"></div>
+              </div>
+
+              <!-- Service C: PPT Only -->
+              <div class="pricing-service-card" id="pricing-card-ppt-only" style="margin-top:16px;">
+                <div class="pricing-service-header">
+                  <div>
+                    <div class="pricing-service-name">
+                      <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="flex-shrink:0;"><path d="M7 2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-1zM2 1a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2H2zm0 8a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H2zm.854-3.646a.5.5 0 0 1 0 .707l-.5.5a.5.5 0 0 1-.707-.707l.5-.5a.5.5 0 0 1 .707 0zm4.5 0a.5.5 0 0 1 .707 0l.5.5a.5.5 0 0 1-.707.707l-.5-.5a.5.5 0 0 1 0-.707zm0 4a.5.5 0 0 1 .707 0l.5.5a.5.5 0 0 1-.707.707l-.5-.5a.5.5 0 0 1 0-.707zm-4.5 0a.5.5 0 0 1 0 .707l-.5.5a.5.5 0 0 1-.707-.707l.5-.5a.5.5 0 0 1 .707 0zM7 10.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0-5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 8a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/></svg>
+                      Service C — PPT Presentation Only
+                    </div>
+                    <div class="pricing-service-desc">PowerPoint presentation slides only, without full seminar report</div>
+                  </div>
+                  <div id="pricing-status-ppt-only" class="pricing-status-badge pricing-badge-paid">₹5 · Paid</div>
+                </div>
+
+                <div class="pricing-form-row">
+                  <div class="pricing-mode-group">
+                    <label class="pricing-mode-label">Pricing Mode</label>
+                    <div class="pricing-toggle-group">
+                      <label class="pricing-radio-label">
+                        <input type="radio" name="pricing-mode-po" value="free" id="po-mode-free"> Free
+                      </label>
+                      <label class="pricing-radio-label">
+                        <input type="radio" name="pricing-mode-po" value="paid" id="po-mode-paid" checked> Paid
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="pricing-amount-group" id="pricing-amount-group-po">
                     <label class="pricing-mode-label" for="pricing-amount-po">Amount</label>
                     <div class="pricing-amount-row">
                       <select id="pricing-currency-po" class="pricing-currency-select">
@@ -1318,27 +1453,31 @@
               </div>
 
               <!-- Payment Gateway & Methods Settings -->
-              <div class="payment-settings-card">
+              <div class="payment-settings-card" style="margin-top:16px;">
                 <div class="pricing-service-header">
                   <div>
                     <div class="pricing-service-name">
                       <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm-1 5v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8H1z"/></svg>
-                      Payment Settings &amp; Gateway Configuration
+                      Payment Methods &amp; Gateway Configuration
                     </div>
                     <div class="pricing-service-desc">Enable or disable payment methods. Secret keys and credentials are kept server-side in environment variables.</div>
                   </div>
                 </div>
 
                 <!-- Gateway Status Alert -->
-                <div id="gateway-status-alert" class="gateway-alert gateway-alert-success">
+                <div id="gateway-status-alert" class="gateway-alert gateway-alert-success" style="margin-bottom:12px;">
                   <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
-                  <span id="gateway-status-text">Razorpay Gateway configured and active on server.</span>
+                  <span id="gateway-status-text">Direct UPI Payment Active (8124060284@superyes).</span>
                 </div>
 
                 <div class="method-checkbox-group">
                   <label class="method-checkbox-label">
                     <input type="checkbox" id="method-enable-upi" checked>
-                    <span>Enable UPI Payments (Google Pay, PhonePe, Paytm, BHIM Dynamic QR)</span>
+                    <span>Enable Direct UPI Payments (Google Pay, PhonePe, Paytm, BHIM Dynamic QR)</span>
+                  </label>
+                  <label class="method-checkbox-label">
+                    <input type="checkbox" id="method-enable-youpi" checked>
+                    <span>Enable YouPI PG Gateway Integration</span>
                   </label>
                   <label class="method-checkbox-label">
                     <input type="checkbox" id="method-enable-razorpay" checked>
@@ -1353,6 +1492,77 @@
                   </button>
                   <div id="save-methods-status" class="pricing-save-status"></div>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 5: PAYMENT MANAGEMENT (YouPI, Direct UPI, UTR Audit) -->
+          <div id="admin-panel-payments" class="admin-tab-content hidden">
+            <div style="padding: 4px 0 14px;">
+              <p class="admin-help-text" style="margin-bottom:14px;">Audit incoming UPI payments, inspect 12-digit UTR references, verify YouPI gateway status, and manually reconcile orders.</p>
+
+              <!-- Payment Summary Stats -->
+              <div class="overview-grid" style="margin-bottom:16px;">
+                <div class="overview-card">
+                  <div class="overview-card-title">Total Orders</div>
+                  <div class="overview-card-val" id="pm-total-orders">0</div>
+                  <div class="overview-card-sub">All payment requests</div>
+                </div>
+                <div class="overview-card">
+                  <div class="overview-card-title">Reconciled / Paid</div>
+                  <div class="overview-card-val" id="pm-reconciled-orders" style="color:#16a34a;">0</div>
+                  <div class="overview-card-sub"><span class="badge-active">Download Active</span></div>
+                </div>
+                <div class="overview-card">
+                  <div class="overview-card-title">Pending / Unverified</div>
+                  <div class="overview-card-val" id="pm-pending-orders" style="color:#d97706;">0</div>
+                  <div class="overview-card-sub"><span class="badge-observed">Awaiting Verification</span></div>
+                </div>
+                <div class="overview-card">
+                  <div class="overview-card-title">Total Revenue</div>
+                  <div class="overview-card-val" id="pm-total-revenue" style="color:#1d4ed8;">₹0.00</div>
+                  <div class="overview-card-sub">Reconciled earnings</div>
+                </div>
+              </div>
+
+              <!-- Filter & Search Bar -->
+              <div class="admin-filter-bar" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+                <div class="txn-filters" style="margin:0;">
+                  <button type="button" class="txn-filter-btn active" data-pm-filter="all">All</button>
+                  <button type="button" class="txn-filter-btn" data-pm-filter="reconciled">Reconciled</button>
+                  <button type="button" class="txn-filter-btn" data-pm-filter="pending">Pending</button>
+                  <button type="button" class="txn-filter-btn" data-pm-filter="failed">Failed</button>
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <input type="text" id="admin-pm-search" class="coupon-input" placeholder="Search Student, UTR, Order ID..." style="width:220px; padding:6px 10px; font-size:0.82rem;">
+                  <button type="button" id="btn-export-payments-csv" class="btn-secondary" style="padding:6px 12px; font-size:0.82rem;" title="Export Payments CSV">
+                    📥 Export CSV
+                  </button>
+                  <button type="button" id="btn-refresh-admin-payments" class="btn-filter-reset" style="padding:6px 12px; font-size:0.82rem;" title="Refresh">
+                    ↻ Refresh
+                  </button>
+                </div>
+              </div>
+
+              <!-- Payments Table -->
+              <div class="admin-table-container">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Student &amp; Topic</th>
+                      <th>Service</th>
+                      <th>Amount</th>
+                      <th>UTR / Reference</th>
+                      <th>Settlement</th>
+                      <th>Created</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-payments-table-body">
+                    <tr><td colspan="8" style="text-align:center;color:#64748b;padding:20px;">Loading payments...</td></tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

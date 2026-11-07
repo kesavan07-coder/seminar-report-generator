@@ -1,14 +1,19 @@
 /**
- * Universal Serverless Function: Initialize Razorpay Order (Dynamic Pricing)
+ * Universal Serverless Function: Initialize Payment Order (YouPI, Direct UPI, Razorpay)
  * Works on Vercel (/api/create-order) and Netlify (/.netlify/functions/create-order)
- * Accepts optional `service` field: 'reportAndPpt' (default) | 'pptOnly'
+ * Dynamic backend-controlled pricing:
+ *   - reportAndPpt: ₹15 (1500 paise)
+ *   - reportOnly:   ₹10 (1000 paise)
+ *   - pptOnly:      ₹5  (500 paise)
+ * UPI ID: 8124060284@superyes
  */
 
 'use strict';
 
 const https = require('https');
-const { recordOrder, getCoupon } = require('./_lib/payment-store');
-const { getServicePricing } = require('./_lib/pricing-store');
+const http = require('http');
+const { recordOrder, getCoupon, generateCouponToken } = require('./_lib/payment-store');
+const { getServicePricing, getUpiConfig, isYoupiConfigured, isGatewayConfigured } = require('./_lib/pricing-store');
 const { validateTopic, validateStudentName, validateSubject, sanitizeText } = require('./_lib/validator');
 const { makeUniversalHandler } = require('./_lib/_adapter');
 
@@ -21,55 +26,52 @@ const CORS_HEADERS = {
 
 const CURRENCY = 'INR';
 
-function createRazorpayOrderHttps(keyId, keySecret, amountPaise, receipt, notes) {
+/**
+ * Call YouPI Gateway POST /api/v1/payments
+ */
+function createYoupiPaymentHttps(apiUrl, merchantId, payload) {
   return new Promise((resolve, reject) => {
-    const postData = JSON.stringify({
-      amount: amountPaise,
-      currency: CURRENCY,
-      receipt,
-      notes,
-      payment_capture: 1
-    });
+    try {
+      const url = new URL('/api/v1/payments', apiUrl);
+      const postData = JSON.stringify(payload);
+      const client = url.protocol === 'https:' ? https : http;
 
-    const auth = Buffer.from(`${keyId}:${keySecret}`).toString('base64');
-
-    const options = {
-      hostname: 'api.razorpay.com',
-      port: 443,
-      path: '/v1/orders',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Basic ${auth}`,
-        'Content-Length': Buffer.byteLength(postData)
-      }
-    };
-
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', chunk => { data += chunk; });
-      res.on('end', () => {
-        try {
-          const parsed = JSON.parse(data);
-          if (res.statusCode >= 200 && res.statusCode < 300) {
-            resolve(parsed);
-          } else {
-            reject(new Error(parsed.error?.description || `Razorpay API error: HTTP ${res.statusCode}`));
+      const req = client.request(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Merchant-Id': merchantId,
+          'Content-Length': Buffer.byteLength(postData)
+        },
+        timeout: 6000
+      }, (res) => {
+        let data = '';
+        res.on('data', chunk => { data += chunk; });
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(data);
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+              resolve(parsed);
+            } else {
+              reject(new Error(parsed.message || `YouPI API HTTP ${res.statusCode}`));
+            }
+          } catch (e) {
+            reject(new Error(`Failed to parse YouPI response: ${data}`));
           }
-        } catch (e) {
-          reject(new Error(`Failed to parse Razorpay API response: ${data}`));
-        }
+        });
       });
-    });
 
-    req.on('error', reject);
-    req.setTimeout(8000, () => {
-      req.destroy();
-      reject(new Error('Razorpay order creation timed out.'));
-    });
+      req.on('error', reject);
+      req.on('timeout', () => {
+        req.destroy();
+        reject(new Error('YouPI API timeout'));
+      });
 
-    req.write(postData);
-    req.end();
+      req.write(postData);
+      req.end();
+    } catch (err) {
+      reject(err);
+    }
   });
 }
 
@@ -119,70 +121,123 @@ async function handler(event, context) {
     const cleanTopic = validTopic.value;
     const cleanSubject = validSubj.value;
 
-    // ── Dynamic Pricing Lookup ──────────────────────────────────
-    const serviceKey = service === 'pptOnly' ? 'pptOnly' : 'reportAndPpt';
-    const servicePricing = getServicePricing(serviceKey);
-    let REPORT_FEE_PAISE = servicePricing ? servicePricing.amountPaise : 500;
-    const serviceLabel = serviceKey === 'pptOnly' ? 'PPT Only' : 'Seminar Report + PPT';
+    // ── Determine Service & Product Type ────────────────────────
+    let serviceKey = 'reportAndPpt';
+    let productType = 'both';
+    if (service === 'pptOnly' || service === 'ppt') {
+      serviceKey = 'pptOnly';
+      productType = 'ppt';
+    } else if (service === 'reportOnly' || service === 'pdf') {
+      serviceKey = 'reportOnly';
+      productType = 'pdf';
+    }
 
-    // Server-side coupon verification and discount application
+    const servicePricing = getServicePricing(serviceKey);
+    const originalFeePaise = servicePricing ? servicePricing.amountPaise : (serviceKey === 'reportOnly' ? 1000 : (serviceKey === 'pptOnly' ? 500 : 1500));
+    let payableFeePaise = servicePricing && servicePricing.mode === 'free' ? 0 : originalFeePaise;
+
+    // ── Apply Coupon Discounts ───────────────────────────────────
     let appliedCoupon = null;
+    let discountPaise = 0;
+
     if (couponCode && typeof couponCode === 'string' && couponCode.trim()) {
       const c = getCoupon(couponCode.trim());
       if (c && c.is_active !== false) {
-        let discountPaise = 0;
         if (c.discount_type === 'percentage') {
-          discountPaise = Math.round((REPORT_FEE_PAISE * c.discount_value) / 100);
+          discountPaise = Math.round((originalFeePaise * c.discount_value) / 100);
         } else {
           discountPaise = Math.round((c.discount_value || 0) * 100);
         }
-        discountPaise = Math.min(discountPaise, REPORT_FEE_PAISE);
-        REPORT_FEE_PAISE = Math.max(0, REPORT_FEE_PAISE - discountPaise);
+        discountPaise = Math.min(discountPaise, originalFeePaise);
+        payableFeePaise = Math.max(0, originalFeePaise - discountPaise);
         appliedCoupon = c.coupon_code;
       }
     }
 
-    const keyId = process.env.RAZORPAY_KEY_ID;
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
-    const isConfigured = keyId && keySecret && !keyId.includes('your_key_id');
+    const orderId = `mec_ord_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const upiConfig = getUpiConfig();
+    const upiId = upiConfig.upiId || '8124060284@superyes';
+    const merchantName = upiConfig.merchantName || 'Seminar Report Generator';
 
-    const receipt = `mec_sem_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 6)}`;
-    const notes = {
-      studentName: cleanStudentName,
-      topic: cleanTopic.substring(0, 40),
-      subject: cleanSubject.substring(0, 40),
-      institution: 'Muthayammal Engineering College',
-      service: `${serviceLabel} (₹${(REPORT_FEE_PAISE / 100).toFixed(2)})`,
-      coupon: appliedCoupon || 'none'
-    };
+    // If completely free after discount or free service mode
+    if (payableFeePaise === 0) {
+      const freeToken = generateCouponToken(cleanStudentName, cleanTopic, appliedCoupon || 'FREE_PROMO');
+      recordOrder({
+        orderId,
+        studentName: cleanStudentName,
+        topic: cleanTopic,
+        amount: 0,
+        originalAmountPaise: originalFeePaise,
+        discountPaise,
+        couponCode: appliedCoupon,
+        service: serviceKey,
+        productType,
+        status: 'success',
+        settlementState: 'RECONCILED'
+      });
 
-    let orderId;
-    let isSimulated = false;
+      return {
+        statusCode: 200,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({
+          success: true,
+          orderId,
+          isFree: true,
+          isFreeAfterDiscount: Boolean(appliedCoupon),
+          amount: 0,
+          amountRupees: 0,
+          originalAmountRupees: originalFeePaise / 100,
+          discountRupees: discountPaise / 100,
+          appliedCoupon,
+          paymentToken: freeToken,
+          service: serviceKey,
+          productType
+        })
+      };
+    }
 
-    if (isConfigured) {
+    // ── Generate Dynamic UPI Intent & QR Data ───────────────────
+    const amountRupees = (payableFeePaise / 100).toFixed(2);
+    const sanitizedTopicNote = cleanTopic.replace(/[^a-zA-Z0-9 ]/g, '').substring(0, 30);
+    const upiIntentUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(merchantName)}&am=${amountRupees}&cu=INR&tn=${encodeURIComponent(sanitizedTopicNote)}&tr=${orderId}`;
+
+    let youpiData = null;
+    let isYoupiActive = false;
+
+    // Check if external YouPI gateway is configured
+    if (isYoupiConfigured()) {
       try {
-        const rzpOrder = await createRazorpayOrderHttps(keyId, keySecret, REPORT_FEE_PAISE, receipt, notes);
-        orderId = rzpOrder.id;
-      } catch (apiError) {
-        console.warn('[Razorpay API Warning] Direct API failed, creating test order ID:', apiError.message);
-        orderId = `order_test_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-        isSimulated = true;
+        const youpiResp = await createYoupiPaymentHttps(
+          process.env.YOUPI_API_URL,
+          process.env.YOUPI_MERCHANT_ID,
+          {
+            orderId,
+            amount: payableFeePaise,
+            currency: 'INR',
+            customer: { name: cleanStudentName },
+            notes: { topic: cleanTopic, service: serviceKey }
+          }
+        );
+        youpiData = youpiResp;
+        isYoupiActive = true;
+      } catch (err) {
+        console.warn('[YouPI Gateway Notice] External gateway call skipped/failed, using direct UPI fallback:', err.message);
       }
-    } else {
-      orderId = `order_sim_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-      isSimulated = true;
     }
 
     recordOrder({
       orderId,
       studentName: cleanStudentName,
       topic: cleanTopic,
-      amount: REPORT_FEE_PAISE,
-      currency: CURRENCY,
-      status: 'created'
+      amount: payableFeePaise,
+      originalAmountPaise: originalFeePaise,
+      discountPaise,
+      couponCode: appliedCoupon,
+      service: serviceKey,
+      productType,
+      status: 'pending',
+      settlementState: 'NOT_RECONCILED'
     });
-
-    const isTestMode = !keyId || keyId.startsWith('rzp_test_');
 
     return {
       statusCode: 200,
@@ -190,15 +245,25 @@ async function handler(event, context) {
       body: JSON.stringify({
         success: true,
         orderId,
-        amount: REPORT_FEE_PAISE,
-        amountRupees: REPORT_FEE_PAISE / 100,
-        currency: CURRENCY,
-        keyId: isConfigured ? keyId : 'rzp_test_simulation',
-        isTestMode,
-        isSimulated,
-        receipt,
         service: serviceKey,
-        appliedCoupon
+        productType,
+        amount: payableFeePaise,
+        amountRupees: payableFeePaise / 100,
+        originalAmountRupees: originalFeePaise / 100,
+        discountRupees: discountPaise / 100,
+        currency: CURRENCY,
+        appliedCoupon,
+        upiConfig: {
+          upiId,
+          merchantName,
+          upiIntentUri,
+          amountRupees: payableFeePaise / 100
+        },
+        youpi: {
+          isActive: isYoupiActive,
+          data: youpiData
+        },
+        razorpayKeyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_simulation'
       })
     };
 
@@ -215,4 +280,3 @@ async function handler(event, context) {
 const universalExport = makeUniversalHandler(handler);
 universalExport.handler = handler;
 module.exports = universalExport;
-

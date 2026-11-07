@@ -1,9 +1,11 @@
 /**
- * Universal Serverless Function: Admin Pricing & Payment Settings Management
- * Handles GET/SET pricing for Report+PPT and PPT-Only services.
- * GET /api/admin-pricing?action=get — returns current pricing (admin-only)
- * POST /api/admin-pricing { action: 'update', service, mode, amountPaise, currency } — updates pricing (admin-only)
- * GET /api/admin-pricing?action=public — returns pricing without auth (used by frontend checkout)
+ * Universal Serverless Function: Admin Pricing, UPI & Payment Settings Management
+ * Handles GET/SET pricing for:
+ *   - Service A: Seminar Report + PPT (Default ₹15)
+ *   - Service B: Seminar Report PDF Only (Default ₹10)
+ *   - Service C: Seminar Presentation PPT Only (Default ₹5)
+ *   - Merchant UPI ID: 8124060284@superyes
+ * Works on Vercel (/api/admin-pricing) and Netlify (/.netlify/functions/admin-pricing)
  */
 
 'use strict';
@@ -12,9 +14,12 @@ const { verifyAdminToken, getTransactions, listCoupons } = require('./_lib/payme
 const {
   getPricing,
   updateServicePricing,
+  getUpiConfig,
+  updateUpiConfig,
   getPaymentMethods,
   updatePaymentMethods,
-  isGatewayConfigured
+  isGatewayConfigured,
+  isYoupiConfigured
 } = require('./_lib/pricing-store');
 const { makeUniversalHandler } = require('./_lib/_adapter');
 
@@ -41,7 +46,7 @@ async function handler(event, context) {
 
     const action = body.action || qp.action || 'get';
 
-    // ── PUBLIC action: frontend reads pricing to show correct amount ──
+    // ── PUBLIC action: frontend reads pricing & upiConfig without auth ──
     if (action === 'public') {
       const pricing = getPricing();
       return {
@@ -55,14 +60,22 @@ async function handler(event, context) {
             amountRupees: pricing.reportAndPpt.amountPaise / 100,
             currency: pricing.reportAndPpt.currency
           },
+          reportOnly: {
+            mode: pricing.reportOnly ? pricing.reportOnly.mode : 'paid',
+            amountPaise: pricing.reportOnly ? pricing.reportOnly.amountPaise : 1000,
+            amountRupees: pricing.reportOnly ? pricing.reportOnly.amountPaise / 100 : 10,
+            currency: pricing.reportOnly ? pricing.reportOnly.currency : 'INR'
+          },
           pptOnly: {
             mode: pricing.pptOnly.mode,
             amountPaise: pricing.pptOnly.amountPaise,
             amountRupees: pricing.pptOnly.amountPaise / 100,
             currency: pricing.pptOnly.currency
           },
+          upiConfig: getUpiConfig(),
           paymentMethods: getPaymentMethods(),
-          isGatewayConfigured: isGatewayConfigured()
+          isGatewayConfigured: isGatewayConfigured(),
+          isYoupiConfigured: isYoupiConfigured()
         })
       };
     }
@@ -89,8 +102,10 @@ async function handler(event, context) {
         body: JSON.stringify({
           success: true,
           pricing,
+          upiConfig: getUpiConfig(),
           paymentMethods: getPaymentMethods(),
-          isGatewayConfigured: isGatewayConfigured()
+          isGatewayConfigured: isGatewayConfigured(),
+          isYoupiConfigured: isYoupiConfigured()
         })
       };
     }
@@ -107,20 +122,22 @@ async function handler(event, context) {
       });
 
       const transactions = getTransactions('all');
-      const successfulTxns = transactions.filter(t => t.status === 'success');
-      const pendingTxns = transactions.filter(t => t.status === 'pending' || t.status === 'created');
+      const successfulTxns = transactions.filter(t => t.status === 'success' || t.settlementState === 'RECONCILED');
+      const pendingTxns = transactions.filter(t => t.status === 'pending' || t.status === 'created' || t.status === 'OBSERVED_SUCCESS');
       const failedTxns = transactions.filter(t => t.status === 'failed' || t.status === 'cancelled');
       const totalRevenue = successfulTxns.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
 
-      // Recent 8 transactions sanitized (no internal tokens or secrets)
-      const recentTransactions = transactions.slice(0, 8).map(t => ({
+      const recentTransactions = transactions.slice(0, 10).map(t => ({
         orderId: t.orderId,
         paymentId: t.paymentId,
+        utr: t.utr,
         studentName: t.studentName,
         topic: t.topic,
+        productType: t.productType || 'both',
         amount: t.amount,
         currency: t.currency || 'INR',
         status: t.status,
+        settlementState: t.settlementState || (t.status === 'success' ? 'RECONCILED' : 'NOT_RECONCILED'),
         createdAt: t.createdAt
       }));
 
@@ -131,9 +148,12 @@ async function handler(event, context) {
           success: true,
           overview: {
             reportAndPpt: pricing.reportAndPpt,
+            reportOnly: pricing.reportOnly,
             pptOnly: pricing.pptOnly,
+            upiConfig: getUpiConfig(),
             paymentMethods,
             isGatewayConfigured: gatewayConfigured,
+            isYoupiConfigured: isYoupiConfigured(),
             couponStats: {
               activeCount: activeCoupons.length,
               totalCount: allCoupons.length
@@ -151,10 +171,33 @@ async function handler(event, context) {
       };
     }
 
+    // ── UPDATE UPI CONFIG ──
+    if (action === 'update_upi') {
+      const { upiId, merchantName } = body;
+      if (!upiId || typeof upiId !== 'string' || !upiId.includes('@')) {
+        return {
+          statusCode: 400,
+          headers: CORS_HEADERS,
+          body: JSON.stringify({ success: false, error: 'Valid UPI ID (e.g. 8124060284@superyes) is required.' })
+        };
+      }
+
+      const updated = updateUpiConfig({ upiId, merchantName }, 'admin');
+      return {
+        statusCode: 200,
+        headers: CORS_HEADERS,
+        body: JSON.stringify({
+          success: true,
+          message: 'UPI details updated successfully.',
+          upiConfig: updated
+        })
+      };
+    }
+
     // ── UPDATE PAYMENT METHODS ──
     if (action === 'update_payment_methods') {
-      const { upi, razorpay } = body;
-      const updated = updatePaymentMethods({ upi, razorpay }, 'admin');
+      const { upi, youpi, razorpay } = body;
+      const updated = updatePaymentMethods({ upi, youpi, razorpay }, 'admin');
       return {
         statusCode: 200,
         headers: CORS_HEADERS,
@@ -162,7 +205,8 @@ async function handler(event, context) {
           success: true,
           message: 'Payment methods updated successfully.',
           paymentMethods: updated,
-          isGatewayConfigured: isGatewayConfigured()
+          isGatewayConfigured: isGatewayConfigured(),
+          isYoupiConfigured: isYoupiConfigured()
         })
       };
     }
@@ -171,11 +215,11 @@ async function handler(event, context) {
     if (action === 'update') {
       const { service, mode, amountPaise, currency } = body;
 
-      if (!service || !['reportAndPpt', 'pptOnly'].includes(service)) {
+      if (!service || !['reportAndPpt', 'reportOnly', 'pptOnly'].includes(service)) {
         return {
           statusCode: 400,
           headers: CORS_HEADERS,
-          body: JSON.stringify({ success: false, error: 'service must be "reportAndPpt" or "pptOnly".' })
+          body: JSON.stringify({ success: false, error: 'service must be "reportAndPpt", "reportOnly", or "pptOnly".' })
         };
       }
 
@@ -192,7 +236,7 @@ async function handler(event, context) {
         return {
           statusCode: 400,
           headers: CORS_HEADERS,
-          body: JSON.stringify({ success: false, error: 'Paid services require a positive amountPaise.' })
+          body: JSON.stringify({ success: false, error: 'Paid services require a positive amount.' })
         };
       }
 
@@ -207,9 +251,8 @@ async function handler(event, context) {
         };
       }
 
-      const serviceLabel = service === 'reportAndPpt' ? 'Seminar Report + PPT' : 'PPT Only';
+      const serviceLabel = service === 'reportAndPpt' ? 'Seminar Report + PPT' : (service === 'reportOnly' ? 'Report PDF Only' : 'PPT Only');
       const modeLabel = mode === 'free' ? 'Free' : `Paid — ₹${(parsedAmount / 100).toFixed(2)}`;
-      console.log(`[Pricing] ${serviceLabel} updated to ${modeLabel} by admin at ${updated.lastUpdatedAt}`);
 
       return {
         statusCode: 200,

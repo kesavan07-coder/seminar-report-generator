@@ -1,6 +1,7 @@
 /**
  * Pricing & Payment Settings Store
- * Persists admin-configured pricing for Report+PPT and PPT-Only services.
+ * Persists admin-configured pricing for Report+PPT, Report-Only, and PPT-Only services,
+ * as well as Merchant UPI ID (8124060284@superyes) and payment gateway settings.
  * Storage: /tmp/mec_pricing.json on Vercel, .pricing_store.json locally.
  */
 
@@ -23,20 +24,34 @@ function getDefaultPricing() {
   return {
     reportAndPpt: {
       mode: 'paid',               // 'free' | 'paid'
-      amountPaise: 500,           // 500 paise = ₹5
+      amountPaise: 1500,          // 1500 paise = ₹15 (PDF + PPT)
+      currency: 'INR',
+      lastUpdatedAt: null,
+      lastUpdatedBy: 'system'
+    },
+    reportOnly: {
+      mode: 'paid',               // 'free' | 'paid'
+      amountPaise: 1000,          // 1000 paise = ₹10 (PDF Report Only)
       currency: 'INR',
       lastUpdatedAt: null,
       lastUpdatedBy: 'system'
     },
     pptOnly: {
-      mode: 'free',               // 'free' | 'paid'
-      amountPaise: 0,
+      mode: 'paid',               // 'free' | 'paid'
+      amountPaise: 500,           // 500 paise = ₹5 (PPT Presentation Only)
       currency: 'INR',
+      lastUpdatedAt: null,
+      lastUpdatedBy: 'system'
+    },
+    upiConfig: {
+      upiId: process.env.MERCHANT_UPI_ID || '8124060284@superyes',
+      merchantName: process.env.MERCHANT_NAME || 'Seminar Report Generator',
       lastUpdatedAt: null,
       lastUpdatedBy: 'system'
     },
     paymentMethods: {
       upi: true,
+      youpi: true,
       razorpay: true,
       lastUpdatedAt: null,
       lastUpdatedBy: 'system'
@@ -60,7 +75,9 @@ function loadPricing() {
       // Merge with defaults to ensure all keys exist
       pricingCache = {
         reportAndPpt:   { ...defaults.reportAndPpt,   ...((parsed && parsed.reportAndPpt)   || {}) },
+        reportOnly:     { ...defaults.reportOnly,     ...((parsed && parsed.reportOnly)     || {}) },
         pptOnly:        { ...defaults.pptOnly,        ...((parsed && parsed.pptOnly)        || {}) },
+        upiConfig:      { ...defaults.upiConfig,      ...((parsed && parsed.upiConfig)      || {}) },
         paymentMethods: { ...defaults.paymentMethods, ...((parsed && parsed.paymentMethods) || {}) }
       };
     } else {
@@ -86,8 +103,7 @@ function savePricing(data) {
 // ── Public API ────────────────────────────────────────────────
 
 /**
- * Get current pricing for both services.
- * @returns {{ reportAndPpt: ServicePricing, pptOnly: ServicePricing }}
+ * Get current pricing for all services.
  */
 function getPricing() {
   return loadPricing();
@@ -95,24 +111,24 @@ function getPricing() {
 
 /**
  * Get pricing for a specific service.
- * @param {'reportAndPpt'|'pptOnly'} service
- * @returns {ServicePricing}
+ * @param {'reportAndPpt'|'reportOnly'|'pptOnly'} service
  */
 function getServicePricing(service) {
   const p = loadPricing();
   if (service === 'reportAndPpt') return p.reportAndPpt;
+  if (service === 'reportOnly') return p.reportOnly;
   if (service === 'pptOnly') return p.pptOnly;
-  return null;
+  return p.reportAndPpt;
 }
 
 /**
  * Update pricing for a service. Called by admin API.
- * @param {'reportAndPpt'|'pptOnly'} service
+ * @param {'reportAndPpt'|'reportOnly'|'pptOnly'} service
  * @param {{ mode: 'free'|'paid', amountPaise: number, currency?: string }} config
  * @param {string} updatedBy - admin username
  */
 function updateServicePricing(service, config, updatedBy = 'admin') {
-  if (service !== 'reportAndPpt' && service !== 'pptOnly') {
+  if (service !== 'reportAndPpt' && service !== 'reportOnly' && service !== 'pptOnly') {
     throw new Error(`Unknown service: ${service}`);
   }
 
@@ -143,7 +159,7 @@ function updateServicePricing(service, config, updatedBy = 'admin') {
 
 /**
  * Check if a service requires payment.
- * @param {'reportAndPpt'|'pptOnly'} service
+ * @param {'reportAndPpt'|'reportOnly'|'pptOnly'} service
  * @returns {boolean}
  */
 function isServicePaid(service) {
@@ -153,21 +169,49 @@ function isServicePaid(service) {
 }
 
 /**
+ * Get Merchant UPI Configuration (UPI ID & Business Name)
+ */
+function getUpiConfig() {
+  const p = loadPricing();
+  return p.upiConfig || {
+    upiId: process.env.MERCHANT_UPI_ID || '8124060284@superyes',
+    merchantName: process.env.MERCHANT_NAME || 'Seminar Report Generator'
+  };
+}
+
+/**
+ * Update Merchant UPI Configuration (Admin editable)
+ */
+function updateUpiConfig({ upiId, merchantName }, updatedBy = 'admin') {
+  const p = loadPricing();
+  p.upiConfig = {
+    upiId: (upiId || '8124060284@superyes').trim(),
+    merchantName: (merchantName || 'Seminar Report Generator').trim(),
+    lastUpdatedAt: new Date().toISOString(),
+    lastUpdatedBy: updatedBy
+  };
+  pricingCache = p;
+  savePricing(p);
+  return p.upiConfig;
+}
+
+/**
  * Get enabled payment methods.
  */
 function getPaymentMethods() {
   const p = loadPricing();
-  return p.paymentMethods || { upi: true, razorpay: true };
+  return p.paymentMethods || { upi: true, youpi: true, razorpay: true };
 }
 
 /**
  * Update enabled payment methods.
  */
-function updatePaymentMethods({ upi, razorpay }, updatedBy = 'admin') {
+function updatePaymentMethods({ upi, youpi, razorpay }, updatedBy = 'admin') {
   const p = loadPricing();
   p.paymentMethods = {
-    upi: Boolean(upi),
-    razorpay: Boolean(razorpay),
+    upi: upi !== undefined ? Boolean(upi) : true,
+    youpi: youpi !== undefined ? Boolean(youpi) : true,
+    razorpay: razorpay !== undefined ? Boolean(razorpay) : true,
     lastUpdatedAt: new Date().toISOString(),
     lastUpdatedBy: updatedBy
   };
@@ -185,12 +229,24 @@ function isGatewayConfigured() {
   return Boolean(keyId && keySecret && !keyId.includes('your_key_id') && keyId.length > 5);
 }
 
+/**
+ * Check if YouPI PG credentials are configured in server environment.
+ */
+function isYoupiConfigured() {
+  const apiUrl = process.env.YOUPI_API_URL;
+  const merchantId = process.env.YOUPI_MERCHANT_ID;
+  return Boolean(apiUrl && merchantId && !apiUrl.includes('your_youpi_instance'));
+}
+
 module.exports = {
   getPricing,
   getServicePricing,
   updateServicePricing,
   isServicePaid,
+  getUpiConfig,
+  updateUpiConfig,
   getPaymentMethods,
   updatePaymentMethods,
-  isGatewayConfigured
+  isGatewayConfigured,
+  isYoupiConfigured
 };

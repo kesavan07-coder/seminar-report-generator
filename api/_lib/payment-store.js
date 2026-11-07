@@ -1,7 +1,8 @@
 /**
  * Universal Shared Transaction & Payment Verification Store
  * Manages order states, cryptographic token verification, single-use token consumption,
- * offline cash coupons (UNUSED -> USED atomic lifecycle), and admin authentication.
+ * offline cash coupons (UNUSED -> USED atomic lifecycle), admin authentication,
+ * YouPI PG & Direct UPI (8124060284@superyes) payment reconciliation, and user history.
  * Works across Vercel, Netlify, and local Node runtime.
  */
 
@@ -12,41 +13,39 @@ const fs = require('fs');
 const path = require('path');
 const { validateStatus, sanitizeText } = require('./validator');
 
-// In-memory transaction registry (persists across warm serverless/Node lifecycle)
+// In-memory registries
 const transactionStore = new Map();
-// Set of consumed tokens to enforce single-use protection
 const consumedTokenSet = new Set();
-// Offline cash coupon registry: Map<coupon_code, CouponObject>
 const couponStore = new Map();
-// Generated seminar reports registry: Map<reportId, ReportObject>
 const reportStore = new Map();
-// Set of invalidated admin tokens (for logout)
 const revokedAdminTokens = new Set();
+const processedWebhookDeliveries = new Set();
 
 // Helper to get secret for token signing
 function getSecretKey() {
-  return process.env.RAZORPAY_KEY_SECRET || 'mec_seminar_default_sec_2026_iqac';
+  return process.env.YOUPI_WEBHOOK_SECRET || process.env.RAZORPAY_KEY_SECRET || 'mec_seminar_default_sec_2026_iqac';
 }
 
-// Persistent coupon storage path (uses /tmp on serverless or local dir)
+// ── Persistent Storage Paths ────────────────────────────────────
 function getCouponStoragePath() {
   const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NETLIFY;
-  if (isServerless) {
-    return path.join('/tmp', 'mec_offline_coupons.json');
-  }
+  if (isServerless) return path.join('/tmp', 'mec_offline_coupons.json');
   return path.join(__dirname, '..', '.coupons_store.json');
 }
 
-// Persistent reports storage path (uses /tmp on serverless or local dir)
 function getReportStoragePath() {
   const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NETLIFY;
-  if (isServerless) {
-    return path.join('/tmp', 'mec_generated_reports.json');
-  }
+  if (isServerless) return path.join('/tmp', 'mec_generated_reports.json');
   return path.join(__dirname, '..', '.reports_store.json');
 }
 
-// Load persisted coupons from disk on cold start
+function getTransactionStoragePath() {
+  const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NETLIFY;
+  if (isServerless) return path.join('/tmp', 'mec_transactions.json');
+  return path.join(__dirname, '..', '.transactions_store.json');
+}
+
+// ── Persistence Loaders & Savers ────────────────────────────────
 function loadPersistedCoupons() {
   try {
     const storePath = getCouponStoragePath();
@@ -60,23 +59,16 @@ function loadPersistedCoupons() {
         }
       }
     }
-  } catch (err) {
-    // Non-fatal fallback to in-memory store
-  }
+  } catch (err) {}
 }
 
-// Save coupons to disk
 function savePersistedCoupons() {
   try {
     const storePath = getCouponStoragePath();
-    const list = Array.from(couponStore.values());
-    fs.writeFileSync(storePath, JSON.stringify(list, null, 2), 'utf8');
-  } catch (err) {
-    // Non-fatal
-  }
+    fs.writeFileSync(storePath, JSON.stringify(Array.from(couponStore.values()), null, 2), 'utf8');
+  } catch (err) {}
 }
 
-// Load persisted reports from disk on cold start
 function loadPersistedReports() {
   try {
     const storePath = getReportStoragePath();
@@ -90,89 +82,312 @@ function loadPersistedReports() {
         }
       }
     }
-  } catch (err) {
-    // Non-fatal fallback to in-memory store
-  }
+  } catch (err) {}
 }
 
-// Save reports to disk
 function savePersistedReports() {
   try {
     const storePath = getReportStoragePath();
-    const list = Array.from(reportStore.values());
-    fs.writeFileSync(storePath, JSON.stringify(list, null, 2), 'utf8');
-  } catch (err) {
-    // Non-fatal
-  }
+    fs.writeFileSync(storePath, JSON.stringify(Array.from(reportStore.values()), null, 2), 'utf8');
+  } catch (err) {}
 }
 
-// Initialize coupons and reports
+function loadPersistedTransactions() {
+  try {
+    const storePath = getTransactionStoragePath();
+    if (fs.existsSync(storePath)) {
+      const data = JSON.parse(fs.readFileSync(storePath, 'utf8'));
+      if (Array.isArray(data)) {
+        for (const item of data) {
+          if (item && item.orderId) {
+            transactionStore.set(item.orderId, item);
+          }
+        }
+      }
+    }
+  } catch (err) {}
+}
+
+function savePersistedTransactions() {
+  try {
+    const storePath = getTransactionStoragePath();
+    fs.writeFileSync(storePath, JSON.stringify(Array.from(transactionStore.values()), null, 2), 'utf8');
+  } catch (err) {}
+}
+
+// Initialize on cold-start
 loadPersistedCoupons();
 loadPersistedReports();
+loadPersistedTransactions();
 
 // ============================================================
 // Order & Transaction Store
 // ============================================================
 
 /**
- * Record a new order creation
+ * Record a new order creation with full YouPI & UPI metadata.
  */
-function recordOrder({ orderId, studentName, topic, amount = 500, currency = 'INR', status = 'created' }) {
+function recordOrder({
+  orderId,
+  studentName,
+  topic,
+  amount = 1500, // in integer paise
+  currency = 'INR',
+  status = 'created',
+  productType = 'both', // 'pdf' | 'ppt' | 'both'
+  service = 'reportAndPpt',
+  couponCode = null,
+  discountPaise = 0,
+  originalAmountPaise = null,
+  paymentMethod = 'upi',
+  utr = null,
+  settlementState = 'NOT_RECONCILED'
+}) {
+  loadPersistedTransactions();
+  const amtPaise = Math.round(Number(amount) || 0);
+  const origPaise = originalAmountPaise ? Math.round(Number(originalAmountPaise)) : amtPaise;
+
   const transaction = {
     orderId,
     paymentId: null,
     studentName: sanitizeText(studentName || 'Student', 100),
     topic: sanitizeText(topic || 'Seminar Report', 300),
-    amount: amount / 100, // stored as ₹5.00
-    amountPaise: amount,
-    currency,
-    status, // 'created' | 'pending' | 'success' | 'failed' | 'cancelled'
+    amount: amtPaise / 100,
+    amountPaise: amtPaise,
+    originalAmountPaise: origPaise,
+    originalAmountRupees: origPaise / 100,
+    discountPaise: Math.round(Number(discountPaise) || 0),
+    discountRupees: (Math.round(Number(discountPaise) || 0)) / 100,
+    couponCode: couponCode ? String(couponCode).trim().toUpperCase() : null,
+    productType: ['pdf', 'ppt', 'both'].includes(productType) ? productType : (service === 'pptOnly' ? 'ppt' : (service === 'reportOnly' ? 'pdf' : 'both')),
+    service: service || 'reportAndPpt',
+    paymentMethod: paymentMethod || 'upi',
+    currency: currency || 'INR',
+    status, // 'created' | 'pending' | 'success' | 'failed' | 'cancelled' | 'OBSERVED_SUCCESS' | 'RECONCILED'
+    settlementState: settlementState || (status === 'success' || status === 'RECONCILED' ? 'RECONCILED' : 'NOT_RECONCILED'),
+    utr: utr ? sanitizeText(utr, 50) : null,
+    auditTrail: [
+      {
+        action: 'ORDER_CREATED',
+        at: new Date().toISOString(),
+        details: `Order created for ${service} (₹${amtPaise / 100})`
+      }
+    ],
     consumed: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
 
   transactionStore.set(orderId, transaction);
+  savePersistedTransactions();
   return transaction;
 }
 
 /**
  * Update transaction status
  */
-function updateTransaction(orderId, { status, paymentId = null, reason = null }) {
-  const existing = transactionStore.get(orderId);
+function updateTransaction(orderId, { status, paymentId = null, utr = null, reason = null, settlementState = null }) {
+  loadPersistedTransactions();
+  let existing = transactionStore.get(orderId);
   if (!existing) {
-    const entry = {
+    existing = {
       orderId,
       paymentId,
       studentName: 'Student',
       topic: 'Seminar Report',
-      amount: 5.00,
-      amountPaise: 500,
+      amount: 15.00,
+      amountPaise: 1500,
+      productType: 'both',
+      service: 'reportAndPpt',
       currency: 'INR',
       status: status || 'pending',
+      settlementState: settlementState || 'NOT_RECONCILED',
+      utr: utr ? sanitizeText(utr, 50) : null,
       reason: reason ? sanitizeText(reason, 200) : null,
+      auditTrail: [],
       consumed: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
-    transactionStore.set(orderId, entry);
-    return entry;
   }
 
-  existing.status = status || existing.status;
+  if (status) existing.status = status;
   if (paymentId) existing.paymentId = paymentId;
+  if (utr) existing.utr = sanitizeText(utr, 50);
   if (reason) existing.reason = sanitizeText(reason, 200);
+  if (settlementState) existing.settlementState = settlementState;
   existing.updatedAt = new Date().toISOString();
 
+  if (!existing.auditTrail) existing.auditTrail = [];
+  existing.auditTrail.push({
+    action: 'STATUS_UPDATE',
+    status: existing.status,
+    settlementState: existing.settlementState,
+    utr: existing.utr,
+    at: existing.updatedAt,
+    reason: existing.reason
+  });
+
   transactionStore.set(orderId, existing);
+  savePersistedTransactions();
   return existing;
+}
+
+/**
+ * Admin or gateway reconciliation
+ */
+function reconcilePayment(orderId, { utr = null, adminUser = 'admin', reason = 'Manual verification' } = {}) {
+  loadPersistedTransactions();
+  let txn = transactionStore.get(orderId);
+  if (!txn) {
+    txn = recordOrder({
+      orderId,
+      studentName: 'Student',
+      topic: 'Seminar Report',
+      amount: 1500,
+      status: 'success'
+    });
+  }
+
+  txn.status = 'success';
+  txn.paymentStatus = 'RECONCILED';
+  txn.settlementState = 'RECONCILED';
+  if (utr) txn.utr = sanitizeText(utr, 50);
+  txn.updatedAt = new Date().toISOString();
+
+  if (!txn.auditTrail) txn.auditTrail = [];
+  txn.auditTrail.push({
+    action: 'RECONCILED',
+    by: sanitizeText(adminUser, 50),
+    at: txn.updatedAt,
+    reason: sanitizeText(reason, 200),
+    utr: txn.utr
+  });
+
+  transactionStore.set(orderId, txn);
+  savePersistedTransactions();
+
+  const token = generatePaymentToken(orderId, txn.paymentId || 'UPI_DIRECT', txn.utr || 'RECONCILED');
+  return { success: true, transaction: txn, paymentToken: token };
+}
+
+/**
+ * Submit UTR by student/customer
+ */
+function submitUtr(orderId, utr, studentName = '') {
+  if (!orderId || !utr) throw new Error('Order ID and UTR are required.');
+  loadPersistedTransactions();
+
+  const cleanUtr = String(utr).trim().replace(/[^a-zA-Z0-9]/g, '');
+  if (cleanUtr.length < 6) {
+    throw new Error('Please enter a valid 12-digit UTR or transaction reference number.');
+  }
+
+  let txn = transactionStore.get(orderId);
+  if (!txn) {
+    txn = recordOrder({
+      orderId,
+      studentName: studentName || 'Student',
+      topic: 'Seminar Topic',
+      amount: 1500,
+      status: 'pending'
+    });
+  }
+
+  txn.utr = cleanUtr;
+  txn.status = 'success';
+  txn.paymentStatus = 'RECONCILED';
+  txn.settlementState = 'RECONCILED';
+  txn.paymentId = `UPI_${cleanUtr}`;
+  txn.updatedAt = new Date().toISOString();
+
+  if (!txn.auditTrail) txn.auditTrail = [];
+  txn.auditTrail.push({
+    action: 'UTR_SUBMITTED',
+    utr: cleanUtr,
+    at: txn.updatedAt,
+    by: studentName || txn.studentName
+  });
+
+  transactionStore.set(orderId, txn);
+  savePersistedTransactions();
+
+  const paymentToken = generatePaymentToken(orderId, txn.paymentId, cleanUtr);
+  return { success: true, transaction: txn, paymentToken };
+}
+
+/**
+ * Process YouPI PG Webhook Event with HMAC-SHA256 signature verification & deduplication
+ */
+function processYoupiWebhookEvent(eventPayload, signature, webhookSecret = getSecretKey(), deliveryId = null) {
+  if (deliveryId && processedWebhookDeliveries.has(deliveryId)) {
+    return { success: true, deduplicated: true, message: 'Webhook delivery already processed' };
+  }
+
+  const orderId = eventPayload.orderId || (eventPayload.data && eventPayload.data.orderId);
+  const eventType = eventPayload.event || eventPayload.type;
+  const utr = eventPayload.utr || (eventPayload.data && eventPayload.data.utr) || null;
+  const paymentId = eventPayload.paymentId || (eventPayload.data && eventPayload.data.id) || null;
+
+  if (!orderId) {
+    throw new Error('Webhook payload missing orderId');
+  }
+
+  loadPersistedTransactions();
+  let txn = transactionStore.get(orderId);
+  if (!txn) {
+    txn = recordOrder({
+      orderId,
+      studentName: 'Student',
+      topic: 'Seminar Report',
+      amount: eventPayload.amount || 1500,
+      status: 'pending'
+    });
+  }
+
+  if (eventType === 'RECONCILED') {
+    txn.status = 'success';
+    txn.paymentStatus = 'RECONCILED';
+    txn.settlementState = 'RECONCILED';
+    if (utr) txn.utr = utr;
+    if (paymentId) txn.paymentId = paymentId;
+  } else if (eventType === 'OBSERVED_SUCCESS') {
+    txn.status = 'pending';
+    txn.paymentStatus = 'OBSERVED_SUCCESS';
+    txn.settlementState = 'NOT_RECONCILED';
+    if (utr) txn.utr = utr;
+  } else if (eventType === 'FAILED' || eventType === 'EXPIRED' || eventType === 'CANCELLED') {
+    txn.status = 'failed';
+    txn.paymentStatus = eventType;
+    txn.settlementState = 'NOT_RECONCILED';
+  }
+
+  txn.updatedAt = new Date().toISOString();
+  if (!txn.auditTrail) txn.auditTrail = [];
+  txn.auditTrail.push({
+    action: `YOUPI_${eventType}`,
+    at: txn.updatedAt,
+    deliveryId
+  });
+
+  transactionStore.set(orderId, txn);
+  savePersistedTransactions();
+
+  if (deliveryId) processedWebhookDeliveries.add(deliveryId);
+
+  let paymentToken = null;
+  if (txn.settlementState === 'RECONCILED') {
+    paymentToken = generatePaymentToken(orderId, txn.paymentId || 'YOUPI', txn.utr || 'RECONCILED');
+  }
+
+  return { success: true, orderId, eventType, settlementState: txn.settlementState, paymentToken };
 }
 
 /**
  * Retrieve all transactions with optional filtering
  */
 function getTransactions(filterStatus = null) {
+  loadPersistedTransactions();
   const validFilter = validateStatus(filterStatus);
   const statusFilter = validFilter.valid ? validFilter.value : 'all';
 
@@ -180,22 +395,59 @@ function getTransactions(filterStatus = null) {
     (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
   );
 
-  if (statusFilter === 'all') {
-    return all;
-  }
+  if (statusFilter === 'all') return all;
+  if (statusFilter === 'reconciled') return all.filter(t => t.settlementState === 'RECONCILED' || t.status === 'success');
+  if (statusFilter === 'pending') return all.filter(t => t.status === 'pending' || t.status === 'created' || t.status === 'OBSERVED_SUCCESS');
 
   return all.filter(t => t.status === statusFilter.toLowerCase());
+}
+
+/**
+ * Get user payment history by student name, topic, or orderId
+ */
+function getUserPaymentHistory(query = '') {
+  loadPersistedTransactions();
+  const q = String(query || '').trim().toLowerCase();
+  const all = Array.from(transactionStore.values()).sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+  );
+
+  if (!q) {
+    return all.slice(0, 15).map(sanitizeUserTxn);
+  }
+
+  return all.filter(t => 
+    (t.studentName && t.studentName.toLowerCase().includes(q)) ||
+    (t.topic && t.topic.toLowerCase().includes(q)) ||
+    (t.orderId && t.orderId.toLowerCase().includes(q)) ||
+    (t.utr && t.utr.toLowerCase().includes(q))
+  ).map(sanitizeUserTxn);
+}
+
+function sanitizeUserTxn(t) {
+  return {
+    orderId: t.orderId,
+    studentName: t.studentName,
+    topic: t.topic,
+    productType: t.productType || 'both',
+    service: t.service || 'reportAndPpt',
+    amountRupees: t.amount,
+    currency: t.currency || 'INR',
+    couponCode: t.couponCode,
+    status: t.status,
+    settlementState: t.settlementState || (t.status === 'success' ? 'RECONCILED' : 'NOT_RECONCILED'),
+    utr: t.utr,
+    createdAt: t.createdAt,
+    canDownload: (t.status === 'success' || t.settlementState === 'RECONCILED')
+  };
 }
 
 // ============================================================
 // One-Time Offline Cash Coupon Generator & Manager
 // ============================================================
 
-const CLEAN_CHARSET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'; // Unambiguous 32-character set
+const CLEAN_CHARSET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 
-/**
- * Compute cryptographic HMAC signature for coupon block1
- */
 function computeCouponSignature(block1, secret = getSecretKey()) {
   const hmac = crypto.createHmac('sha256', secret).update(`OFFLINE_CASH_V1:${block1.toUpperCase()}:500`).digest();
   let sig = '';
@@ -205,9 +457,6 @@ function computeCouponSignature(block1, secret = getSecretKey()) {
   return sig;
 }
 
-/**
- * Verify cryptographic signature of an offline coupon code
- */
 function verifyOfflineCouponSignature(code) {
   if (!code || typeof code !== 'string') return false;
   const match = code.trim().toUpperCase().match(/^OFF-([23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{4})-([23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{4})$/);
@@ -217,10 +466,6 @@ function verifyOfflineCouponSignature(code) {
   return constantTimeEqual(block2, expectedBlock2);
 }
 
-/**
- * Generate a clean, human-readable, cryptographically verifiable coupon code.
- * Example: OFF-X7K9-P2QM
- */
 function generateOfflineCouponCode() {
   const bytes = crypto.randomBytes(4);
   let block1 = '';
@@ -231,10 +476,6 @@ function generateOfflineCouponCode() {
   return `OFF-${block1}-${block2}`;
 }
 
-/**
- * Create a new one-time offline cash coupon
- * Status: UNUSED, amount: ₹5, type: 'offline_cash'
- */
 function createOfflineCoupon({ createdBy = 'admin' } = {}) {
   let code = generateOfflineCouponCode();
   while (couponStore.has(code)) {
@@ -246,7 +487,7 @@ function createOfflineCoupon({ createdBy = 'admin' } = {}) {
     amount: 5,
     amountPaise: 500,
     type: 'offline_cash',
-    status: 'UNUSED', // 'UNUSED' | 'USED'
+    status: 'UNUSED',
     created_at: new Date().toISOString(),
     used_at: null,
     used_by_student: null,
@@ -259,9 +500,6 @@ function createOfflineCoupon({ createdBy = 'admin' } = {}) {
   return coupon;
 }
 
-/**
- * Look up a coupon by code (case-insensitive & cryptographically verified across serverless containers)
- */
 function getCoupon(code) {
   if (!code || typeof code !== 'string') return null;
   loadPersistedCoupons();
@@ -271,7 +509,6 @@ function getCoupon(code) {
     return couponStore.get(normalizedCode);
   }
 
-  // If not in local in-memory map (e.g. separate serverless container), verify cryptographic signature
   if (verifyOfflineCouponSignature(normalizedCode)) {
     const verifiedCoupon = {
       coupon_code: normalizedCode,
@@ -293,14 +530,6 @@ function getCoupon(code) {
   return null;
 }
 
-/**
- * Atomically redeem an offline cash coupon (UNUSED -> USED).
- * Returns { success: true, coupon } or { success: false, reason: 'NOT_FOUND' | 'ALREADY_USED', coupon }
- */
-/**
- * Atomically redeem a coupon (offline cash or custom).
- * Returns { success: true, coupon } or { success: false, reason, coupon }
- */
 function redeemCoupon(code, studentName = '', topic = '', orderId = null) {
   if (!code || typeof code !== 'string') {
     return { success: false, reason: 'INVALID_INPUT' };
@@ -315,7 +544,6 @@ function redeemCoupon(code, studentName = '', topic = '', orderId = null) {
     if (coupon.status === 'USED') {
       return { success: false, reason: 'ALREADY_USED', coupon };
     }
-    // Atomic state change: UNUSED -> USED
     coupon.status = 'USED';
     coupon.used_at = new Date().toISOString();
     coupon.used_by_student = sanitizeText(studentName || 'Student', 100);
@@ -326,7 +554,6 @@ function redeemCoupon(code, studentName = '', topic = '', orderId = null) {
     return { success: true, coupon };
   }
 
-  // Custom coupon redemption
   if (coupon.is_active === false || coupon.status === 'INACTIVE') {
     return { success: false, reason: 'INACTIVE', coupon };
   }
@@ -353,9 +580,6 @@ function redeemCoupon(code, studentName = '', topic = '', orderId = null) {
   return { success: true, coupon };
 }
 
-/**
- * Create a new custom admin-managed coupon
- */
 function createCustomCoupon({
   code,
   discountType = 'fixed',
@@ -377,30 +601,24 @@ function createCustomCoupon({
   }
 
   const numDiscount = Number(discountValue);
-  if (isNaN(numDiscount) || numDiscount <= 0) {
-    throw new Error('Discount value must be greater than 0.');
-  }
-  if (discountType === 'percentage' && numDiscount > 100) {
-    throw new Error('Percentage discount cannot exceed 100%.');
-  }
+  if (isNaN(numDiscount) || numDiscount <= 0) throw new Error('Discount value must be greater than zero.');
 
   const coupon = {
     coupon_code: normalizedCode,
     type: 'custom',
     discount_type: discountType === 'percentage' ? 'percentage' : 'fixed',
     discount_value: numDiscount,
-    start_date: startDate ? startDate.trim() : null,
-    expiry_date: expiryDate ? expiryDate.trim() : null,
+    applicable_service: ['both', 'reportAndPpt', 'reportOnly', 'pptOnly'].includes(applicableService) ? applicableService : 'both',
+    start_date: startDate ? new Date(startDate).toISOString() : null,
+    expiry_date: expiryDate ? new Date(expiryDate).toISOString() : null,
     usage_limit: Math.max(0, parseInt(usageLimit, 10) || 0),
     per_user_limit: Math.max(1, parseInt(perUserLimit, 10) || 1),
-    applicable_service: ['both', 'reportAndPpt', 'pptOnly'].includes(applicableService) ? applicableService : 'both',
-    status: 'ACTIVE',
-    is_active: true,
     used_count: 0,
-    redemptions: [],
+    is_active: true,
+    status: 'ACTIVE',
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    createdBy: sanitizeText(createdBy, 50)
+    created_by: sanitizeText(createdBy, 50),
+    redemptions: []
   };
 
   couponStore.set(normalizedCode, coupon);
@@ -408,69 +626,51 @@ function createCustomCoupon({
   return coupon;
 }
 
-/**
- * Update an existing custom coupon
- */
 function updateCustomCoupon(code, updates = {}, updatedBy = 'admin') {
-  if (!code) throw new Error('Coupon code is required.');
+  if (!code) return null;
   loadPersistedCoupons();
   const normalizedCode = code.trim().toUpperCase();
   const coupon = couponStore.get(normalizedCode);
-  if (!coupon) throw new Error(`Coupon "${normalizedCode}" not found.`);
+  if (!coupon) return null;
 
-  if (updates.discountType) {
-    coupon.discount_type = updates.discountType === 'percentage' ? 'percentage' : 'fixed';
-  }
   if (updates.discountValue !== undefined) {
-    const num = Number(updates.discountValue);
-    if (isNaN(num) || num <= 0) throw new Error('Discount value must be positive.');
-    if (coupon.discount_type === 'percentage' && num > 100) throw new Error('Percentage discount cannot exceed 100%.');
-    coupon.discount_value = num;
+    const val = Number(updates.discountValue);
+    if (!isNaN(val) && val > 0) coupon.discount_value = val;
   }
-  if (updates.startDate !== undefined) coupon.start_date = updates.startDate || null;
-  if (updates.expiryDate !== undefined) coupon.expiry_date = updates.expiryDate || null;
-  if (updates.usageLimit !== undefined) coupon.usage_limit = Math.max(0, parseInt(updates.usageLimit, 10) || 0);
-  if (updates.perUserLimit !== undefined) coupon.per_user_limit = Math.max(1, parseInt(updates.perUserLimit, 10) || 1);
-  if (updates.applicableService) {
-    coupon.applicable_service = ['both', 'reportAndPpt', 'pptOnly'].includes(updates.applicableService) ? updates.applicableService : 'both';
+  if (updates.discountType !== undefined) {
+    coupon.discount_type = updates.discountType === 'percentage' ? 'percentage' : 'fixed';
   }
   if (updates.isActive !== undefined) {
     coupon.is_active = Boolean(updates.isActive);
     coupon.status = coupon.is_active ? 'ACTIVE' : 'INACTIVE';
   }
-
+  if (updates.expiryDate !== undefined) {
+    coupon.expiry_date = updates.expiryDate ? new Date(updates.expiryDate).toISOString() : null;
+  }
+  if (updates.usageLimit !== undefined) {
+    coupon.usage_limit = Math.max(0, parseInt(updates.usageLimit, 10) || 0);
+  }
   coupon.updated_at = new Date().toISOString();
-  coupon.updatedBy = sanitizeText(updatedBy, 50);
+  coupon.updated_by = sanitizeText(updatedBy, 50);
 
   couponStore.set(normalizedCode, coupon);
   savePersistedCoupons();
   return coupon;
 }
 
-/**
- * Toggle coupon active status
- */
 function toggleCouponStatus(code, isActive, updatedBy = 'admin') {
   return updateCustomCoupon(code, { isActive }, updatedBy);
 }
 
-/**
- * Delete a coupon
- */
 function deleteCoupon(code) {
   if (!code) return false;
   loadPersistedCoupons();
   const normalizedCode = code.trim().toUpperCase();
   const deleted = couponStore.delete(normalizedCode);
-  if (deleted) {
-    savePersistedCoupons();
-  }
+  if (deleted) savePersistedCoupons();
   return deleted;
 }
 
-/**
- * List all coupons for admin dashboard
- */
 function listCoupons() {
   loadPersistedCoupons();
   return Array.from(couponStore.values()).sort(
@@ -520,7 +720,6 @@ function verifyAdminToken(token) {
     const parts = payload.split(':');
     if (parts[0] !== 'admin') return false;
     const timestamp = parseInt(parts[2], 10);
-    // Token valid for 24 hours
     if (Date.now() - timestamp > 24 * 60 * 60 * 1000) return false;
 
     return true;
@@ -547,59 +746,39 @@ function generateReportId() {
   return `REP-${dateStr}-${rand}`;
 }
 
-/**
- * Persistently records a generated report upon verified payment/coupon
- */
 function recordGeneratedReport(reportData) {
   loadPersistedReports();
-  const now = new Date();
   const reportId = reportData.reportId || generateReportId();
-
-  const dateFormatted = now.toLocaleDateString('en-IN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  });
-
-  const timeFormatted = now.toLocaleTimeString('en-IN', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  });
-
-  const record = {
+  const entry = {
+    ...reportData,
     reportId,
     studentName: sanitizeText(reportData.studentName || 'Student', 100),
-    registerNo: sanitizeText(reportData.registerNo || '7316XXXXXXX', 50),
-    topic: sanitizeText(reportData.topic || 'Seminar Topic', 300),
-    department: sanitizeText(reportData.department || 'Computer Science and Engineering', 150),
-    yearSemSec: sanitizeText(reportData.yearSemSec || 'III / VI / A', 50),
+    registerNo: sanitizeText(reportData.registerNo || '—', 50),
+    topic: sanitizeText(reportData.topic || 'Seminar Report', 300),
+    department: sanitizeText(reportData.department || '—', 100),
+    yearSemSec: sanitizeText(reportData.yearSemSec || '—', 50),
     collegeName: sanitizeText(reportData.collegeName || 'Muthayammal Engineering College', 150),
-    subject: sanitizeText(reportData.subject || 'Engineering & Technology', 150),
-    facultyName: sanitizeText(reportData.facultyName || 'Faculty In-Charge', 100),
+    subject: sanitizeText(reportData.subject || '—', 150),
+    facultyName: sanitizeText(reportData.facultyName || '—', 100),
     academicYear: sanitizeText(reportData.academicYear || '2026-2027', 50),
-    courseCodeName: sanitizeText(reportData.courseCodeName || '', 150),
-    seminarNo: sanitizeText(reportData.seminarNo || '01', 50),
-    seminarDate: sanitizeText(reportData.seminarDate || '', 50),
-    paymentMethod: (reportData.paymentMethod === 'offline_coupon' || reportData.paymentMethod === 'Offline Coupon') ? 'Offline Coupon' : 'Razorpay',
-    paymentId: reportData.paymentId ? sanitizeText(reportData.paymentId, 100) : null,
-    couponCode: reportData.couponCode ? sanitizeText(reportData.couponCode, 100) : null,
-    generatedDate: dateFormatted,
-    generatedTime: timeFormatted,
-    status: 'completed',
-    createdAt: now.toISOString(),
-    aiContent: reportData.aiContent || null,
-    diagramPngDataUri: reportData.diagramPngDataUri || null
+    courseCodeName: sanitizeText(reportData.courseCodeName || '—', 100),
+    seminarNo: sanitizeText(reportData.seminarNo || '1', 20),
+    seminarDate: sanitizeText(reportData.seminarDate || new Date().toISOString().slice(0, 10), 30),
+    paymentMethod: reportData.paymentMethod || 'UPI',
+    paymentId: reportData.paymentId || reportData.utr || null,
+    couponCode: reportData.couponCode || null,
+    productType: reportData.productType || 'both',
+    generatedDate: new Date().toLocaleDateString('en-GB'),
+    generatedTime: new Date().toLocaleTimeString('en-IN', { hour12: true }),
+    createdAt: new Date().toISOString(),
+    status: 'ACTIVE'
   };
 
-  reportStore.set(reportId, record);
+  reportStore.set(reportId, entry);
   savePersistedReports();
-  return record;
+  return entry;
 }
 
-/**
- * List generated reports for admin view with optional search and filters
- */
 function listGeneratedReports({ search, paymentMethod, date } = {}) {
   loadPersistedReports();
   let reports = Array.from(reportStore.values()).sort(
@@ -622,6 +801,8 @@ function listGeneratedReports({ search, paymentMethod, date } = {}) {
       reports = reports.filter(r => r.paymentMethod === 'Razorpay');
     } else if (pm === 'offline_coupon' || pm === 'coupon') {
       reports = reports.filter(r => r.paymentMethod === 'Offline Coupon');
+    } else {
+      reports = reports.filter(r => (r.paymentMethod || '').toLowerCase().includes(pm));
     }
   }
 
@@ -633,34 +814,9 @@ function listGeneratedReports({ search, paymentMethod, date } = {}) {
     );
   }
 
-  // Return clean list view summaries
-  return reports.map(r => ({
-    reportId: r.reportId,
-    studentName: r.studentName,
-    registerNo: r.registerNo,
-    topic: r.topic,
-    department: r.department,
-    yearSemSec: r.yearSemSec,
-    collegeName: r.collegeName,
-    subject: r.subject,
-    facultyName: r.facultyName,
-    academicYear: r.academicYear,
-    courseCodeName: r.courseCodeName,
-    seminarNo: r.seminarNo,
-    seminarDate: r.seminarDate,
-    paymentMethod: r.paymentMethod,
-    paymentId: r.paymentId,
-    couponCode: r.couponCode,
-    generatedDate: r.generatedDate,
-    generatedTime: r.generatedTime,
-    status: r.status,
-    createdAt: r.createdAt
-  }));
+  return reports;
 }
 
-/**
- * Retrieve a specific report by reportId with full content for admin View
- */
 function getReportById(reportId) {
   if (!reportId || typeof reportId !== 'string') return null;
   loadPersistedReports();
@@ -672,33 +828,26 @@ function getReportById(reportId) {
 // Cryptographic Token Signing & Verification
 // ============================================================
 
-/**
- * Generate a cryptographically signed single-use verification token (Razorpay)
- */
-function generatePaymentToken(orderId, paymentId) {
-  const payload = `rzp:${orderId}:${paymentId}:${Date.now()}`;
+function generatePaymentToken(orderId, paymentId = 'PAYMENT', utr = 'UTR') {
+  const isRzp = paymentId && paymentId.startsWith('pay_');
+  const payload = isRzp
+    ? `rzp:${orderId}:${paymentId}:${Date.now()}`
+    : `youpi:${orderId}:${paymentId}:${utr}:${Date.now()}`;
   const hmac = crypto.createHmac('sha256', getSecretKey()).update(payload).digest('hex');
   return Buffer.from(JSON.stringify({ payload, hmac })).toString('base64');
 }
 
-/**
- * Generate a cryptographically signed single-use coupon authorization token.
- */
 function generateCouponToken(studentName, topic, couponCode = 'COUPON') {
   const payload = `coupon:${studentName}:${topic.substring(0, 80)}:${couponCode}:${Date.now()}`;
   const hmac = crypto.createHmac('sha256', getSecretKey()).update(payload).digest('hex');
   return Buffer.from(JSON.stringify({ payload, hmac })).toString('base64');
 }
 
-/**
- * Verify a payment token (Razorpay) or coupon token and ensure it is valid and unused.
- */
 function verifyPaymentToken(token, expectedOrderId = null) {
   if (!token || typeof token !== 'string') {
     return { valid: false, error: 'Missing payment token.' };
   }
 
-  // Check if token has already been consumed
   if (consumedTokenSet.has(token)) {
     return { valid: false, error: 'This payment authorization token has already been used to generate a report.' };
   }
@@ -712,7 +861,7 @@ function verifyPaymentToken(token, expectedOrderId = null) {
       return { valid: false, error: 'Invalid token cryptographic signature.' };
     }
 
-    // ---- Coupon token: payload starts with 'coupon:' ----
+    // Coupon token
     if (payload.startsWith('coupon:')) {
       const parts = payload.split(':');
       const timestamp = parseInt(parts[parts.length - 1], 10);
@@ -724,48 +873,57 @@ function verifyPaymentToken(token, expectedOrderId = null) {
       return { valid: true, tokenType: 'coupon', orderId: null, paymentId: null, couponCode, studentName };
     }
 
-    // ---- Razorpay token: payload starts with 'rzp:' ----
-    const parts = payload.split(':');
-    const orderId = parts[1];
-    const paymentId = parts[2];
-    const timestamp = parseInt(parts[3], 10);
+    // YouPI & UPI token
+    if (payload.startsWith('youpi:')) {
+      const parts = payload.split(':');
+      const orderId = parts[1];
+      const paymentId = parts[2];
+      const utr = parts[3];
+      const timestamp = parseInt(parts[4], 10);
 
-    if (Date.now() - timestamp > 2 * 60 * 60 * 1000) {
-      return { valid: false, error: 'Payment token has expired.' };
+      if (Date.now() - timestamp > 2 * 60 * 60 * 1000) {
+        return { valid: false, error: 'Payment token has expired.' };
+      }
+      if (expectedOrderId && orderId !== expectedOrderId) {
+        return { valid: false, error: 'Token order ID mismatch.' };
+      }
+      const txn = transactionStore.get(orderId);
+      return { valid: true, tokenType: 'youpi', orderId, paymentId, utr, studentName: txn ? txn.studentName : null };
     }
 
-    if (expectedOrderId && orderId !== expectedOrderId) {
-      return { valid: false, error: 'Token order ID mismatch.' };
+    // Razorpay token
+    if (payload.startsWith('rzp:')) {
+      const parts = payload.split(':');
+      const orderId = parts[1];
+      const paymentId = parts[2];
+      const timestamp = parseInt(parts[3], 10);
+
+      if (Date.now() - timestamp > 2 * 60 * 60 * 1000) {
+        return { valid: false, error: 'Payment token has expired.' };
+      }
+      if (expectedOrderId && orderId !== expectedOrderId) {
+        return { valid: false, error: 'Token order ID mismatch.' };
+      }
+      const txn = transactionStore.get(orderId);
+      return { valid: true, tokenType: 'razorpay', orderId, paymentId, studentName: txn ? txn.studentName : null };
     }
 
-    const txn = transactionStore.get(orderId);
-    if (txn && txn.status !== 'success') {
-      return { valid: false, error: `Transaction status is '${txn.status}' (expected 'success').` };
-    }
-
-    return { valid: true, tokenType: 'razorpay', orderId, paymentId, studentName: txn ? txn.studentName : null };
+    return { valid: false, error: 'Unrecognized token payload.' };
   } catch (err) {
     return { valid: false, error: 'Malformed payment token.' };
   }
 }
 
-/**
- * Consumes a payment token once report generation succeeds
- */
 function consumePaymentToken(token, orderId) {
-  if (token) {
-    consumedTokenSet.add(token);
-  }
+  if (token) consumedTokenSet.add(token);
   if (orderId && transactionStore.has(orderId)) {
     const txn = transactionStore.get(orderId);
     txn.consumed = true;
     txn.consumedAt = new Date().toISOString();
+    savePersistedTransactions();
   }
 }
 
-/**
- * Verify Razorpay HMAC-SHA256 signature
- */
 function verifyRazorpaySignature(orderId, paymentId, signature, secret) {
   if (!orderId || !paymentId || !signature || !secret) return false;
   try {
@@ -785,7 +943,11 @@ function verifyRazorpaySignature(orderId, paymentId, signature, secret) {
 module.exports = {
   recordOrder,
   updateTransaction,
+  reconcilePayment,
+  submitUtr,
+  processYoupiWebhookEvent,
   getTransactions,
+  getUserPaymentHistory,
   generatePaymentToken,
   generateCouponToken,
   verifyPaymentToken,

@@ -390,8 +390,9 @@ async function runTests() {
   } finally {
     // Reset test state to clean defaults so other test suites aren't affected
     ['TEST40', 'FREESEMINAR', 'PPTONLY50'].forEach(c => paymentStore.deleteCoupon(c));
-    pricingStore.updateServicePricing('pptOnly', { mode: 'free', amountPaise: 0, currency: 'INR' });
-    pricingStore.updateServicePricing('reportAndPpt', { mode: 'paid', amountPaise: 500, currency: 'INR' });
+    pricingStore.updateServicePricing('reportAndPpt', { mode: 'paid', amountPaise: 1500, currency: 'INR' });
+    pricingStore.updateServicePricing('reportOnly', { mode: 'paid', amountPaise: 1000, currency: 'INR' });
+    pricingStore.updateServicePricing('pptOnly', { mode: 'paid', amountPaise: 500, currency: 'INR' });
   }
 }
 

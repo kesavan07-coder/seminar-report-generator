@@ -32,6 +32,16 @@ let cachedOrderData = null;
 // ============================================================
 function getEl(id) { return document.getElementById(id); }
 
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 async function showPaymentModal(formData) {
   pendingFormData = { ...formData, _pptOnlyMode: false };
 
@@ -48,13 +58,16 @@ async function showPaymentModal(formData) {
   }
 
   // Configure modal for Report + PPT with dynamic amount
-  const amountRupees = rpPricing ? (rpPricing.amountPaise / 100).toFixed(0) : '5';
+  const amountRupees = rpPricing ? (rpPricing.amountPaise / 100).toFixed(0) : '15';
 
   const titleEl = getEl('payment-modal-title');
   if (titleEl) titleEl.textContent = 'Choose Payment Method';
 
   const subtitleEl = document.querySelector('.payment-subtitle');
   if (subtitleEl) subtitleEl.textContent = 'Official COE/IQAC Format 3-Page Document • Instant Access';
+
+  const upiPayableEl = getEl('upi-payable-amount');
+  if (upiPayableEl) upiPayableEl.textContent = `₹${amountRupees}`;
 
   const feeAmountEl = document.querySelector('#razorpay-option .fee-amount-inline');
   if (feeAmountEl) feeAmountEl.textContent = `₹${amountRupees}`;
@@ -63,13 +76,20 @@ async function showPaymentModal(formData) {
   if (feeLabelEl) feeLabelEl.textContent = 'Report Generation Fee';
 
   const payBtnText = getEl('pay-btn-text');
-  if (payBtnText) payBtnText.textContent = `Pay ₹${amountRupees} & Generate Report`;
+  if (payBtnText) payBtnText.textContent = `Pay ₹${amountRupees} via Razorpay`;
 
   const optionHeaderSpan = document.querySelector('#razorpay-option .access-option-header span');
   if (optionHeaderSpan) optionHeaderSpan.textContent = `Pay ₹${amountRupees} with Razorpay`;
 
   getEl('pay-student-name').textContent = formData.studentName || '—';
   getEl('pay-topic').textContent        = formData.topic || '—';
+
+  // Reset UTR input and status
+  const utrInput = getEl('upi-utr-input');
+  if (utrInput) utrInput.value = '';
+  const utrStatus = getEl('upi-utr-status-area');
+  if (utrStatus) utrStatus.innerHTML = '';
+
   clearPaymentStatus();
   resetPayButton();
   resetCouponSection();
@@ -77,6 +97,9 @@ async function showPaymentModal(formData) {
   // Show modal
   getEl('payment-modal').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
+
+  // Automatically setup UPI QR and mobile links
+  setupUpiCheckout('reportAndPpt');
 }
 
 function hidePaymentModal() {
@@ -85,6 +108,9 @@ function hidePaymentModal() {
   clearPaymentStatus();
   resetPayButton();
   resetCouponSection();
+  const utrStatus = getEl('upi-utr-status-area');
+  if (utrStatus) utrStatus.innerHTML = '';
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
   isPayButtonLocked = false;
   isCouponButtonLocked = false;
 }
@@ -271,6 +297,199 @@ async function apiValidateCoupon(couponCode, studentName, topic, subject, servic
 }
 
 // ============================================================
+// Direct UPI & Dynamic QR Checkout (Merchant: 8124060284@superyes)
+// ============================================================
+let pollTimer = null;
+
+async function setupUpiCheckout(service = 'reportAndPpt') {
+  const qrImg = getEl('upi-dynamic-qr-img');
+  const qrLoading = getEl('upi-qr-loading');
+  if (qrImg) qrImg.style.display = 'none';
+  if (qrLoading) qrLoading.style.display = 'block';
+
+  const studentName = pendingFormData ? (pendingFormData.studentName || pendingFormData.pptStudentName || 'Student') : 'Student';
+  const topic = pendingFormData ? (pendingFormData.topic || 'Seminar Report') : 'Seminar Report';
+  const subject = pendingFormData ? (pendingFormData.subject || '') : '';
+  const coupon = pendingFormData ? (pendingFormData._appliedCouponCode || null) : null;
+
+  try {
+    const orderData = await apiCreateOrder(studentName, topic, subject, service, coupon);
+    currentOrderId = orderData.orderId;
+    cachedOrderData = orderData;
+
+    // Case 1: 100% coupon waiver
+    if (orderData.isFreeAfterDiscount && orderData.couponToken) {
+      currentPaymentToken = orderData.couponToken;
+      paymentState = PaymentState.SUCCESS;
+      hidePaymentModal();
+      if (pendingFormData && pendingFormData._pptOnlyMode && typeof pendingFormData._pptOnlyCallback === 'function') {
+        pendingFormData._pptOnlyCallback(currentPaymentToken, currentOrderId);
+      } else if (typeof window.generateReportAfterPayment === 'function') {
+        window.generateReportAfterPayment(pendingFormData, currentPaymentToken, currentOrderId);
+      }
+      return;
+    }
+
+    const upi = orderData.upiConfig || {};
+    const upiId = upi.upiId || '8124060284@superyes';
+    const upiName = upi.upiName || 'Seminar Report Generator';
+    const upiIntentUri = upi.upiIntentUri || `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(upiName)}&am=${orderData.amountRupees}&cu=INR`;
+    const qrUrl = upi.dynamicQrUrl || `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiIntentUri)}`;
+
+    // Update Merchant UPI display
+    const upiDisplay = getEl('display-merchant-upi-id');
+    if (upiDisplay) upiDisplay.textContent = upiId;
+
+    // Update Amount display
+    const amtDisplay = getEl('upi-payable-amount');
+    if (amtDisplay) amtDisplay.textContent = `₹${orderData.amountRupees}`;
+
+    // Update QR Code
+    if (qrImg) {
+      qrImg.onload = () => {
+        qrImg.style.display = 'block';
+        if (qrLoading) qrLoading.style.display = 'none';
+      };
+      qrImg.src = qrUrl;
+      if (qrImg.complete) {
+        qrImg.style.display = 'block';
+        if (qrLoading) qrLoading.style.display = 'none';
+      }
+    }
+
+    // Update Mobile Intent Links
+    const btnGeneric = getEl('btn-upi-intent-generic');
+    if (btnGeneric) btnGeneric.href = upiIntentUri;
+
+    const gpayUri = upiIntentUri.replace(/^upi:\/\//i, 'gpay://upi/');
+    const phonepeUri = upiIntentUri.replace(/^upi:\/\//i, 'phonepe://');
+    const paytmUri = upiIntentUri.replace(/^upi:\/\//i, 'paytmmp://');
+
+    if (getEl('btn-upi-intent-gpay')) getEl('btn-upi-intent-gpay').href = gpayUri;
+    if (getEl('btn-upi-intent-phonepe')) getEl('btn-upi-intent-phonepe').href = phonepeUri;
+    if (getEl('btn-upi-intent-paytm')) getEl('btn-upi-intent-paytm').href = paytmUri;
+
+  } catch (err) {
+    console.error('Failed to initialize UPI order:', err);
+    if (qrLoading) {
+      qrLoading.innerHTML = `<span style="color:#dc2626;font-size:0.75rem;">Failed to load QR: ${escapeHtml(err.message)}</span>`;
+    }
+  }
+}
+
+async function submitUtrVerification() {
+  const utrInput = getEl('upi-utr-input');
+  const utrVal = utrInput ? utrInput.value.trim() : '';
+  const statusArea = getEl('upi-utr-status-area');
+  const btn = getEl('btn-submit-utr');
+  const spinner = getEl('utr-btn-spinner');
+  const btnText = getEl('utr-btn-text');
+
+  if (!utrVal || utrVal.length < 6) {
+    if (statusArea) {
+      statusArea.innerHTML = '<div class="payment-status payment-status-error"><span>Please enter a valid 12-digit UTR / UPI Ref Number (min 6 characters).</span></div>';
+    }
+    return;
+  }
+
+  if (!currentOrderId) {
+    if (statusArea) {
+      statusArea.innerHTML = '<div class="payment-status payment-status-error"><span>Order initializing. Please wait a moment and try again.</span></div>';
+    }
+    return;
+  }
+
+  if (btn) btn.disabled = true;
+  if (spinner) spinner.style.display = 'inline-block';
+  if (btnText) btnText.textContent = 'Verifying...';
+  if (statusArea) statusArea.innerHTML = '';
+
+  try {
+    const studentName = pendingFormData ? (pendingFormData.studentName || pendingFormData.pptStudentName || 'Student') : 'Student';
+    const res = await fetch('/api/verify-payment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        orderId: currentOrderId,
+        utr: utrVal,
+        studentName,
+        paymentMethod: 'upi'
+      })
+    });
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      throw new Error(data.error || 'Payment verification failed.');
+    }
+
+    if (data.verified && data.paymentToken) {
+      currentPaymentToken = data.paymentToken;
+      paymentState = PaymentState.SUCCESS;
+
+      if (statusArea) {
+        statusArea.innerHTML = '<div class="payment-status payment-status-success"><span>Payment verified successfully! Generating your document...</span></div>';
+      }
+
+      await new Promise(r => setTimeout(r, 900));
+      hidePaymentModal();
+
+      if (pendingFormData && pendingFormData._pptOnlyMode && typeof pendingFormData._pptOnlyCallback === 'function') {
+        pendingFormData._pptOnlyCallback(currentPaymentToken, currentOrderId);
+      } else if (typeof window.generateReportAfterPayment === 'function') {
+        window.generateReportAfterPayment(pendingFormData, currentPaymentToken, currentOrderId);
+      }
+    } else {
+      if (statusArea) {
+        statusArea.innerHTML = `<div class="payment-status payment-status-info"><span>UTR submitted (${escapeHtml(utrVal)}). Awaiting bank reconciliation... Order ID: <code>${escapeHtml(currentOrderId)}</code></span></div>`;
+      }
+      pollPaymentReconciliation(currentOrderId);
+    }
+  } catch (err) {
+    if (statusArea) {
+      statusArea.innerHTML = `<div class="payment-status payment-status-error"><span>${escapeHtml(err.message)}</span></div>`;
+    }
+  } finally {
+    if (btn) btn.disabled = false;
+    if (spinner) spinner.style.display = 'none';
+    if (btnText) btnText.textContent = 'Verify & Download';
+  }
+}
+
+function pollPaymentReconciliation(orderId) {
+  if (pollTimer) clearInterval(pollTimer);
+  let attempts = 0;
+  pollTimer = setInterval(async () => {
+    attempts++;
+    if (attempts > 20 || paymentState === PaymentState.SUCCESS) {
+      clearInterval(pollTimer);
+      return;
+    }
+    try {
+      const resp = await fetch(`/api/verify-payment?orderId=${encodeURIComponent(orderId)}`);
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.verified && data.paymentToken) {
+          clearInterval(pollTimer);
+          currentPaymentToken = data.paymentToken;
+          paymentState = PaymentState.SUCCESS;
+          const statusArea = getEl('upi-utr-status-area');
+          if (statusArea) {
+            statusArea.innerHTML = '<div class="payment-status payment-status-success"><span>Payment Reconciled! Generating your document...</span></div>';
+          }
+          await new Promise(r => setTimeout(r, 800));
+          hidePaymentModal();
+          if (pendingFormData && pendingFormData._pptOnlyMode && typeof pendingFormData._pptOnlyCallback === 'function') {
+            pendingFormData._pptOnlyCallback(currentPaymentToken, orderId);
+          } else if (typeof window.generateReportAfterPayment === 'function') {
+            window.generateReportAfterPayment(pendingFormData, currentPaymentToken, orderId);
+          }
+        }
+      }
+    } catch (e) {}
+  }, 4000);
+}
+
+// ============================================================
 // Coupon Flow & Admin Portal State
 // ============================================================
 let currentAdminToken = null;
@@ -346,13 +565,19 @@ async function applyCoupon() {
   const payBtnText = getEl('pay-btn-text');
   if (payBtnText) {
     const srvName = (pendingFormData && pendingFormData._pptOnlyMode) ? 'PPT' : 'Report';
-    payBtnText.textContent = `Pay ₹${result.finalPayableRupees} & Generate ${srvName}`;
+    payBtnText.textContent = `Pay ₹${result.finalPayableRupees} via Razorpay`;
   }
   const feeAmountEl = document.querySelector('#razorpay-option .fee-amount-inline');
   if (feeAmountEl) feeAmountEl.textContent = `₹${result.finalPayableRupees}`;
 
   const feeLabelEl = document.querySelector('#razorpay-option .fee-label-inline');
   if (feeLabelEl) feeLabelEl.textContent = `Discounted Fee (₹${result.discountRupees} off)`;
+
+  const upiPayableEl = getEl('upi-payable-amount');
+  if (upiPayableEl) upiPayableEl.textContent = `₹${result.finalPayableRupees}`;
+
+  // Re-generate dynamic UPI checkout and intent links with discounted amount
+  setupUpiCheckout(service);
 }
 
 // ============================================================
@@ -415,7 +640,8 @@ function switchAdminTab(tabName) {
     'reports': getEl('admin-panel-reports'),
     'generate-coupon': getEl('admin-panel-generate-coupon'),
     'coupons-log': getEl('admin-panel-coupons-log'),
-    'pricing': getEl('admin-panel-pricing')
+    'pricing': getEl('admin-panel-pricing'),
+    'payments': getEl('admin-panel-payments')
   };
 
   Object.entries(panels).forEach(([key, panel]) => {
@@ -435,6 +661,8 @@ function switchAdminTab(tabName) {
     loadAdminCoupons();
   } else if (tabName === 'pricing') {
     loadAdminPricing();
+  } else if (tabName === 'payments') {
+    loadAdminPayments();
   }
 }
 
@@ -2352,10 +2580,50 @@ function updatePricingUI(pricing) {
       poLastUpdated.textContent = `Last updated: ${d.toLocaleString('en-IN')} by ${po.lastUpdatedBy || 'admin'}`;
     }
   }
+
+  // Service B: Report PDF Only card
+  const ro = pricing.reportOnly;
+  if (ro) {
+    const roModeFreeEl = getEl('ro-mode-free');
+    const roModePaidEl = getEl('ro-mode-paid');
+    const roAmountEl = getEl('pricing-amount-ro');
+    const roAmountGroup = getEl('pricing-amount-group-ro');
+    const roStatusBadge = getEl('pricing-status-report-only');
+    const roLastUpdated = getEl('pricing-last-updated-ro');
+    const roPaiseHint = getEl('pricing-paise-hint-ro');
+
+    if (roModeFreeEl) roModeFreeEl.checked = ro.mode === 'free';
+    if (roModePaidEl) roModePaidEl.checked = ro.mode === 'paid';
+    if (roAmountEl && ro.mode === 'paid') roAmountEl.value = (ro.amountPaise / 100).toFixed(0);
+    if (roAmountGroup) roAmountGroup.style.display = ro.mode === 'paid' ? 'flex' : 'none';
+    if (roPaiseHint) roPaiseHint.textContent = `= ${ro.amountPaise} paise`;
+    if (roStatusBadge) {
+      if (ro.mode === 'free') {
+        roStatusBadge.className = 'pricing-status-badge pricing-badge-free';
+        roStatusBadge.textContent = 'Free';
+      } else {
+        roStatusBadge.className = 'pricing-status-badge pricing-badge-paid';
+        roStatusBadge.textContent = `₹${(ro.amountPaise / 100).toFixed(0)} · Paid`;
+      }
+    }
+    if (roLastUpdated && ro.lastUpdatedAt) {
+      const d = new Date(ro.lastUpdatedAt);
+      roLastUpdated.textContent = `Last updated: ${d.toLocaleString('en-IN')} by ${ro.lastUpdatedBy || 'admin'}`;
+    }
+  }
+
+  // Merchant UPI Config
+  const upi = pricing.upiConfig;
+  if (upi) {
+    const upiIdEl = getEl('admin-upi-id-input');
+    const upiNameEl = getEl('admin-upi-name-input');
+    if (upiIdEl && upi.upiId) upiIdEl.value = upi.upiId;
+    if (upiNameEl && upi.upiName) upiNameEl.value = upi.upiName;
+  }
 }
 
 async function saveAdminPricing(service) {
-  const suffix = service === 'reportAndPpt' ? 'rp' : 'po';
+  const suffix = service === 'reportAndPpt' ? 'rp' : service === 'reportOnly' ? 'ro' : 'po';
   const modeRadios = document.querySelectorAll(`input[name="pricing-mode-${suffix}"]`);
   let selectedMode = 'paid';
   modeRadios.forEach(r => { if (r.checked) selectedMode = r.value; });
@@ -2421,6 +2689,226 @@ async function saveAdminPricing(service) {
   }
 }
 
+async function saveAdminUpiConfig() {
+  const upiId = getEl('admin-upi-id-input')?.value?.trim();
+  const upiName = getEl('admin-upi-name-input')?.value?.trim() || 'Seminar Report Generator';
+
+  const btn = getEl('btn-save-upi-config');
+  const spinner = getEl('save-upi-spinner');
+  const btnText = getEl('save-upi-text');
+  const statusEl = getEl('admin-upi-status');
+
+  if (!upiId || !upiId.includes('@')) {
+    if (statusEl) statusEl.innerHTML = '<span style="color:#dc2626;font-size:0.83rem;">⚠ Please enter a valid UPI ID (e.g. 8124060284@superyes).</span>';
+    return;
+  }
+
+  if (btn) btn.disabled = true;
+  if (spinner) spinner.style.display = 'inline-block';
+  if (btnText) btnText.textContent = 'Saving…';
+  if (statusEl) statusEl.innerHTML = '';
+
+  try {
+    const resp = await fetch('/api/admin-pricing', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentAdminToken}`
+      },
+      body: JSON.stringify({ action: 'update_upi', upiId, upiName })
+    });
+    const data = await resp.json();
+    if (!resp.ok || !data.success) {
+      if (resp.status === 401) { handleAdminLogout(); return; }
+      throw new Error(data.error || 'Failed to save UPI settings.');
+    }
+
+    if (statusEl) {
+      statusEl.innerHTML = '<span style="color:#15803d;font-size:0.83rem;">✓ Merchant UPI settings saved.</span>';
+      setTimeout(() => { if (statusEl) statusEl.innerHTML = ''; }, 3000);
+    }
+  } catch (err) {
+    if (statusEl) statusEl.innerHTML = `<span style="color:#dc2626;font-size:0.83rem;">Error: ${escapeHtml(err.message)}</span>`;
+  } finally {
+    if (btn) btn.disabled = false;
+    if (spinner) spinner.style.display = 'none';
+    if (btnText) btnText.textContent = 'Save UPI Settings';
+  }
+}
+
+// ============================================================
+// Payment Management Tab (Tab 5)
+// ============================================================
+let currentPmFilter = 'all';
+let currentPmSearch = '';
+let currentPmList = [];
+
+async function loadAdminPayments(filter = currentPmFilter, search = currentPmSearch) {
+  currentPmFilter = filter;
+  currentPmSearch = search;
+  const tbody = getEl('admin-payments-table-body');
+  if (!tbody) return;
+
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;padding:24px;"><span class="loader-spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:8px;"></span> Loading payments list...</td></tr>';
+
+  try {
+    const url = `/api/transactions?action=list&status=${encodeURIComponent(filter)}&search=${encodeURIComponent(search)}`;
+    const resp = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${currentAdminToken}` }
+    });
+    const data = await resp.json();
+
+    if (!resp.ok || !data.success) {
+      if (resp.status === 401) { handleAdminLogout(); return; }
+      throw new Error(data.error || 'Failed to load payments.');
+    }
+
+    const txns = data.transactions || [];
+    currentPmList = txns;
+
+    // Summary stats
+    const totalCount = data.summary ? data.summary.total : txns.length;
+    const reconciledCount = txns.filter(t => t.status === 'success' || (t.settlementStatus || '').toUpperCase() === 'RECONCILED').length;
+    const pendingCount = txns.filter(t => t.status === 'pending' || t.status === 'created' || (t.settlementStatus || '').toUpperCase() === 'OBSERVED_SUCCESS').length;
+    const totalRevenue = txns
+      .filter(t => t.status === 'success' || (t.settlementStatus || '').toUpperCase() === 'RECONCILED')
+      .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+
+    if (getEl('pm-total-orders')) getEl('pm-total-orders').textContent = totalCount;
+    if (getEl('pm-reconciled-orders')) getEl('pm-reconciled-orders').textContent = reconciledCount;
+    if (getEl('pm-pending-orders')) getEl('pm-pending-orders').textContent = pendingCount;
+    if (getEl('pm-total-revenue')) getEl('pm-total-revenue').textContent = `₹${(totalRevenue / 100).toFixed(2)}`;
+    if (getEl('admin-payments-count')) getEl('admin-payments-count').textContent = totalCount;
+
+    if (txns.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;padding:24px;">No payment records found.</td></tr>';
+      return;
+    }
+
+    const formatDate = (iso) => {
+      if (!iso) return '—';
+      const d = new Date(iso);
+      return d.toLocaleDateString('en-IN') + ' ' + d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    };
+
+    const getServiceLabel = (srv) => {
+      if (srv === 'reportAndPpt') return '<span class="badge-service-tag" style="background:#e0f2fe;color:#0369a1;">Report + PPT</span>';
+      if (srv === 'reportOnly') return '<span class="badge-service-tag" style="background:#ede9fe;color:#6d28d9;">Report PDF</span>';
+      if (srv === 'pptOnly') return '<span class="badge-service-tag" style="background:#fef3c7;color:#b45309;">PPT Only</span>';
+      return '<span class="badge-service-tag">Seminar</span>';
+    };
+
+    const getSettlementBadge = (t) => {
+      const s = (t.settlementStatus || (t.status === 'success' ? 'RECONCILED' : 'PENDING')).toUpperCase();
+      if (s === 'RECONCILED' || t.status === 'success') {
+        return '<span class="badge-active" style="background:#dcfce7;color:#15803d;border:1px solid #86efac;font-size:0.75rem;">✓ RECONCILED</span>';
+      }
+      if (s === 'OBSERVED_SUCCESS') {
+        return '<span class="badge-observed" style="background:#fef3c7;color:#b45309;border:1px solid #fde68a;font-size:0.75rem;">⏳ OBSERVED</span>';
+      }
+      if (t.status === 'failed') {
+        return '<span class="badge-inactive" style="background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;font-size:0.75rem;">FAILED</span>';
+      }
+      return '<span class="badge-observed" style="background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;font-size:0.75rem;">PENDING</span>';
+    };
+
+    tbody.innerHTML = txns.map(t => {
+      const isReconciled = t.status === 'success' || (t.settlementStatus || '').toUpperCase() === 'RECONCILED';
+      const actionHtml = isReconciled
+        ? `<span style="color:#16a34a;font-weight:600;font-size:0.78rem;">Reconciled ✓</span>`
+        : `<button type="button" class="btn-sm-action btn-reconcile-action" data-reconcile-id="${escapeHtml(t.orderId)}" data-utr="${escapeHtml(t.utr || '')}" style="background:#16a34a;color:#fff;border:none;border-radius:4px;padding:4px 8px;font-size:0.75rem;cursor:pointer;">
+             ✓ Reconcile
+           </button>`;
+
+      return `
+        <tr>
+          <td><span style="font-family:monospace;font-size:0.8rem;color:#0284c7;font-weight:600;">${escapeHtml(t.orderId)}</span></td>
+          <td>
+            <div style="font-weight:600;color:#0f172a;">${escapeHtml(t.studentName || '—')}</div>
+            <div style="font-size:0.75rem;color:#64748b;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHtml(t.topic || '')}">${escapeHtml(t.topic || '—')}</div>
+          </td>
+          <td>${getServiceLabel(t.service)}</td>
+          <td><strong>₹${(Number(t.amount || 0) / 100).toFixed(2)}</strong></td>
+          <td><span style="font-family:monospace;font-size:0.8rem;background:#f8fafc;padding:2px 6px;border-radius:4px;border:1px solid #e2e8f0;">${escapeHtml(t.utr || '—')}</span></td>
+          <td>${getSettlementBadge(t)}</td>
+          <td style="font-size:0.75rem;color:#64748b;">${formatDate(t.createdAt)}</td>
+          <td>${actionHtml}</td>
+        </tr>
+      `;
+    }).join('');
+
+    // Attach click listeners to reconcile buttons
+    tbody.querySelectorAll('.btn-reconcile-action').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const orderId = btn.dataset.reconcileId;
+        const utr = btn.dataset.utr || '';
+        if (!confirm(`Reconcile payment for Order ${orderId}? This will mark it as paid and generate a payment token.`)) return;
+
+        btn.disabled = true;
+        btn.textContent = 'Verifying...';
+
+        try {
+          const r = await fetch('/api/transactions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${currentAdminToken}`
+            },
+            body: JSON.stringify({
+              action: 'reconcile',
+              orderId,
+              utr,
+              adminUser: 'admin',
+              adminToken: currentAdminToken
+            })
+          });
+          const d = await r.json();
+          if (!r.ok || !d.success) throw new Error(d.error || 'Reconciliation failed.');
+          loadAdminPayments(currentPmFilter, currentPmSearch);
+        } catch (err) {
+          alert('Reconciliation error: ' + err.message);
+          btn.disabled = false;
+          btn.textContent = '✓ Reconcile';
+        }
+      });
+    });
+
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#dc2626;padding:20px;">Error: ${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+function exportPaymentsCsv() {
+  if (!currentPmList || currentPmList.length === 0) {
+    alert('No payment records to export.');
+    return;
+  }
+  const headers = ['Order ID', 'Student Name', 'Topic', 'Service', 'Amount (INR)', 'Payment Method', 'UTR', 'Status', 'Settlement Status', 'Created At'];
+  const rows = currentPmList.map(t => [
+    `"${(t.orderId || '').replace(/"/g, '""')}"`,
+    `"${(t.studentName || '').replace(/"/g, '""')}"`,
+    `"${(t.topic || '').replace(/"/g, '""')}"`,
+    `"${(t.service || '').replace(/"/g, '""')}"`,
+    (Number(t.amount || 0) / 100).toFixed(2),
+    `"${(t.paymentMethod || '').replace(/"/g, '""')}"`,
+    `"${(t.utr || '').replace(/"/g, '""')}"`,
+    `"${(t.status || '').replace(/"/g, '""')}"`,
+    `"${(t.settlementStatus || '').replace(/"/g, '""')}"`,
+    `"${(t.createdAt || '').replace(/"/g, '""')}"`
+  ]);
+
+  const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `payments-reconciliation-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function initPricingTab() {
   // Report + PPT: toggle amount group visibility
   document.querySelectorAll('input[name="pricing-mode-rp"]').forEach(radio => {
@@ -2440,6 +2928,15 @@ function initPricingTab() {
     });
   });
 
+  // Service B: Report PDF Only toggle amount group visibility
+  document.querySelectorAll('input[name="pricing-mode-ro"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      const isPaid = getEl('ro-mode-paid')?.checked;
+      const group = getEl('pricing-amount-group-ro');
+      if (group) group.style.display = isPaid ? 'flex' : 'none';
+    });
+  });
+
   // Report + PPT: update paise hint on amount change
   getEl('pricing-amount-rp')?.addEventListener('input', () => {
     const v = parseFloat(getEl('pricing-amount-rp').value || '0');
@@ -2454,9 +2951,20 @@ function initPricingTab() {
     if (hint) hint.textContent = `= ${Math.round(v * 100)} paise`;
   });
 
+  // Report PDF Only: update paise hint on amount change
+  getEl('pricing-amount-ro')?.addEventListener('input', () => {
+    const v = parseFloat(getEl('pricing-amount-ro').value || '0');
+    const hint = getEl('pricing-paise-hint-ro');
+    if (hint) hint.textContent = `= ${Math.round(v * 100)} paise`;
+  });
+
   // Save pricing buttons
   getEl('btn-save-pricing-rp')?.addEventListener('click', () => saveAdminPricing('reportAndPpt'));
   getEl('btn-save-pricing-po')?.addEventListener('click', () => saveAdminPricing('pptOnly'));
+  getEl('btn-save-pricing-ro')?.addEventListener('click', () => saveAdminPricing('reportOnly'));
+
+  // Save Merchant UPI Config
+  getEl('btn-save-upi-config')?.addEventListener('click', saveAdminUpiConfig);
 
   // Save payment methods button
   getEl('btn-save-payment-methods')?.addEventListener('click', savePaymentMethods);
@@ -2486,18 +2994,23 @@ async function showPptPaymentModal(formData, onSuccess) {
   // PPT is paid — reuse existing payment modal with modified label
   pendingFormData = { ...formData, _pptOnlyMode: true, _pptOnlyCallback: onSuccess };
 
+  const amountRupees = (pptPricing.amountPaise / 100).toFixed(0);
+
   // Update the modal title and amount display for PPT Only
   const titleEl = getEl('payment-modal-title');
   if (titleEl) titleEl.textContent = 'Pay & Generate PPT';
 
+  const upiPayableEl = getEl('upi-payable-amount');
+  if (upiPayableEl) upiPayableEl.textContent = `₹${amountRupees}`;
+
   const feeAmountEl = document.querySelector('#razorpay-option .fee-amount-inline');
-  if (feeAmountEl) feeAmountEl.textContent = `₹${(pptPricing.amountPaise / 100).toFixed(0)}`;
+  if (feeAmountEl) feeAmountEl.textContent = `₹${amountRupees}`;
 
   const feeLabelEl = document.querySelector('#razorpay-option .fee-label-inline');
   if (feeLabelEl) feeLabelEl.textContent = 'PPT Generation Fee';
 
   const payBtnText = getEl('pay-btn-text');
-  if (payBtnText) payBtnText.textContent = `Pay ₹${(pptPricing.amountPaise / 100).toFixed(0)} & Generate PPT`;
+  if (payBtnText) payBtnText.textContent = `Pay ₹${amountRupees} via Razorpay`;
 
   const subtitleEl = document.querySelector('.payment-subtitle');
   if (subtitleEl) subtitleEl.textContent = 'PowerPoint Presentation · Instant Download';
@@ -2505,12 +3018,21 @@ async function showPptPaymentModal(formData, onSuccess) {
   getEl('pay-student-name').textContent = formData.pptStudentName || formData.studentName || '—';
   getEl('pay-topic').textContent = formData.topic || '—';
 
+  // Reset UTR input and status
+  const utrInput = getEl('upi-utr-input');
+  if (utrInput) utrInput.value = '';
+  const utrStatus = getEl('upi-utr-status-area');
+  if (utrStatus) utrStatus.innerHTML = '';
+
   clearPaymentStatus();
   resetPayButton();
   resetCouponSection();
 
   getEl('payment-modal').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
+
+  // Automatically setup UPI QR and mobile links for PPT
+  setupUpiCheckout('pptOnly');
 }
 
 // ============================================================
@@ -2680,6 +3202,57 @@ document.addEventListener('DOMContentLoaded', () => {
   // Admin Reports Refresh Button
   getEl('btn-refresh-admin-reports')?.addEventListener('click', () => {
     loadAdminReports();
+  });
+
+  // Direct UPI Copy Button
+  getEl('btn-copy-upi-id')?.addEventListener('click', () => {
+    const upiId = getEl('display-merchant-upi-id')?.textContent?.trim() || '8124060284@superyes';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(upiId).then(() => {
+        const btn = getEl('btn-copy-upi-id');
+        if (btn) {
+          const original = btn.innerHTML;
+          btn.innerHTML = '✓ Copied!';
+          setTimeout(() => { btn.innerHTML = original; }, 2000);
+        }
+      });
+    }
+  });
+
+  // UTR Submit Button
+  getEl('btn-submit-utr')?.addEventListener('click', submitUtrVerification);
+
+  // UTR Input Enter key
+  getEl('upi-utr-input')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') submitUtrVerification();
+  });
+
+  // Admin Payment Management Filter buttons
+  document.querySelectorAll('.txn-filter-btn[data-pm-filter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.txn-filter-btn[data-pm-filter]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      loadAdminPayments(btn.dataset.pmFilter, getEl('admin-pm-search')?.value?.trim() || '');
+    });
+  });
+
+  // Admin Payment Management Search (with debounce)
+  let adminPmSearchTimer = null;
+  getEl('admin-pm-search')?.addEventListener('input', () => {
+    clearTimeout(adminPmSearchTimer);
+    adminPmSearchTimer = setTimeout(() => {
+      const activeFilter = document.querySelector('.txn-filter-btn[data-pm-filter].active')?.dataset.pmFilter || 'all';
+      loadAdminPayments(activeFilter, getEl('admin-pm-search')?.value?.trim() || '');
+    }, 250);
+  });
+
+  // Admin Payment Management Export CSV
+  getEl('btn-export-payments-csv')?.addEventListener('click', exportPaymentsCsv);
+
+  // Admin Payment Management Refresh button
+  getEl('btn-refresh-admin-payments')?.addEventListener('click', () => {
+    const activeFilter = document.querySelector('.txn-filter-btn[data-pm-filter].active')?.dataset.pmFilter || 'all';
+    loadAdminPayments(activeFilter, getEl('admin-pm-search')?.value?.trim() || '');
   });
 
   // Admin Report View Modal Close Buttons

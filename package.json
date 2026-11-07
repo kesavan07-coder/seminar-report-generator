@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node dev-server.js",
     "start": "node dev-server.js",
-    "test": "node test/test-generator.js && node test/test-security.js && node test/test-ppt.js && node test/test-smart-dropdowns.js && node test/test-admin-pricing.js"
+    "test": "node test/test-generator.js && node test/test-security.js && node test/test-ppt.js && node test/test-smart-dropdowns.js && node test/test-admin-pricing.js && node test/test-youpi-integration.js"
   },
   "keywords": [
     "seminar-report",

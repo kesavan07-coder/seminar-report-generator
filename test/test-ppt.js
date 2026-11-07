@@ -15,6 +15,8 @@ const fs = require('fs');
 const PptxGenJS = require('pptxgenjs');
 const { jsPDF } = require('jspdf');
 
+process.env.PAYMENT_ENFORCEMENT = 'false';
+
 const { handler } = require('../api/generate-ppt');
 const { synthesizeTopicDeck, toUpperCaseTitle } = require('../api/_lib/ppt-content');
 
