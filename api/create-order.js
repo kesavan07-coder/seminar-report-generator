@@ -41,8 +41,10 @@ function createYoupiPaymentHttps(apiUrl, merchantId, payload) {
         headers: {
           'Content-Type': 'application/json',
           'X-Merchant-Id': merchantId,
+          'X-Merchant-Key': process.env.YOUPI_MERCHANT_KEY || 'youpi_live_sec_8124060284_2026',
           'Content-Length': Buffer.byteLength(postData)
         },
+
         timeout: 6000
       }, (res) => {
         let data = '';
@@ -212,8 +214,9 @@ async function handler(event, context) {
           process.env.YOUPI_MERCHANT_ID,
           {
             orderId,
-            amount: payableFeePaise,
+            amount: (payableFeePaise / 100).toFixed(2),
             currency: 'INR',
+
             customer: { name: cleanStudentName },
             notes: { topic: cleanTopic, service: serviceKey }
           }
